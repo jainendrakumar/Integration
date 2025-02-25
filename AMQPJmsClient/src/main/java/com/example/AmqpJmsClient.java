@@ -8,7 +8,7 @@ public class AmqpJmsClient {
     // Define connection details
     private static final String AMQP_URL = "amqps://mq1.usec-hostingtd-quintiq.com:443"; 
     private static final String USERNAME = "COPA_TEST_quser";
-    private static final String PASSWORD = "1n7lj5Z6PiGu2L0v2066jWlj";
+    private static final String PASSWORD = "";
     private static final String QUEUE_NAME = "COPA_TEST.Queue1"; // Change as needed
 
     public static void main(String[] args) {

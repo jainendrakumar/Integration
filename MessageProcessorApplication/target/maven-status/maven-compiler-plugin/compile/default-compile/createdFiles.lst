@@ -1,0 +1,6 @@
+com\example\aggregation\AggregationServiceApplication.class
+com\example\aggregation\MessageController.class
+com\example\aggregation\ArchiveZipper.class
+com\example\aggregation\ArchiveZipper$1.class
+com\example\aggregation\AggregatorService$MessageBucket.class
+com\example\aggregation\AggregatorService.class

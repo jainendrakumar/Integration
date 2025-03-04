@@ -9,54 +9,70 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+/**
+ * Jainendra Kumar
+ * ToDo:
+ */
 
 @Service
 public class ArchiveZipper {
 
-    @Value("${archive.incoming.hourly.root}")
-    private String incomingHourlyRoot;
+    @Value("${archive.incoming.root}")
+    private String incomingArchiveRoot;
 
-    @Value("${archive.incoming.minute.root}")
-    private String incomingMinuteRoot;
+    @Value("${archive.merged.root}")
+    private String mergedArchiveRoot;
 
-    @Value("${archive.merged.hourly.root}")
-    private String mergedHourlyRoot;
-
-    @Value("${archive.merged.minute.root}")
-    private String mergedMinuteRoot;
-
-    // Output folder for zipped archives (default to "archive/zipped" if not provided).
+    // Output folder for zipped archives.
     @Value("${archive.zip.output.root:archive/zipped}")
     private String zipOutputRoot;
 
-    // This task runs daily at 1 AM.
-    @Scheduled(cron = "0 0 1 * * *")
+    // Cron expression for running the zip job daily at a specific time.
+    @Value("${archive.zip.cron:0 0 1 * * *}")
+    private String zipCron;
+
+    // Switch to enable/disable the zip and delete process.
+    @Value("${archive.zipper.enabled:true}")
+    private boolean zipperEnabled;
+
+    // Maximum number of zip files to retain in the zip output folder.
+    @Value("${archive.zip.maxFiles:30}")
+    private int maxZipFiles;
+
+    @Scheduled(cron = "${archive.zip.cron}")
     public void zipPreviousDayArchives() {
+        if (!zipperEnabled) {
+            return;
+        }
         // Determine previous day's date in "yyyyMMdd" format.
         LocalDate previousDay = LocalDate.now().minusDays(1);
         String dateStr = previousDay.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
 
-        zipArchiveDirectories(incomingHourlyRoot, dateStr, "incoming_hourly_" + dateStr + ".zip");
-        zipArchiveDirectories(incomingMinuteRoot, dateStr, "incoming_minute_" + dateStr + ".zip");
-        zipArchiveDirectories(mergedHourlyRoot, dateStr, "merged_hourly_" + dateStr + ".zip");
-        zipArchiveDirectories(mergedMinuteRoot, dateStr, "merged_minute_" + dateStr + ".zip");
+        zipAndDeleteDirectories(incomingArchiveRoot, dateStr, "incoming_" + dateStr + ".zip");
+        zipAndDeleteDirectories(mergedArchiveRoot, dateStr, "merged_" + dateStr + ".zip");
+
+        // Clean up old zip files if more than maxZipFiles are present.
+        cleanupOldZipFiles();
     }
 
-    private void zipArchiveDirectories(String rootDir, String datePrefix, String outputZipName) {
+    private void zipAndDeleteDirectories(String rootDir, String datePrefix, String outputZipName) {
         try {
             Path rootPath = Paths.get(rootDir);
             if (!Files.exists(rootPath)) {
                 return;
             }
-            // List subdirectories whose names start with the previous day's date.
+            // Find all subdirectories whose name starts with the previous day's date.
             File[] subDirs = new File(rootDir).listFiles(file ->
                     file.isDirectory() && file.getName().startsWith(datePrefix));
             if (subDirs == null || subDirs.length == 0) {
                 return;
             }
-            // Ensure output directory exists.
+            // Ensure the zip output directory exists.
             Path zipOutputPath = Paths.get(zipOutputRoot);
             if (!Files.exists(zipOutputPath)) {
                 Files.createDirectories(zipOutputPath);
@@ -79,9 +95,7 @@ public class ArchiveZipper {
 
     private void zipDirectory(File folder, String parentFolder, ZipOutputStream zos) throws IOException {
         File[] files = folder.listFiles();
-        if (files == null) {
-            return;
-        }
+        if (files == null) return;
         for (File file : files) {
             if (file.isDirectory()) {
                 zipDirectory(file, parentFolder + "/" + file.getName(), zos);
@@ -100,9 +114,6 @@ public class ArchiveZipper {
         }
     }
 
-    /**
-     * Recursively deletes a directory.
-     */
     private void deleteDirectory(Path path) throws IOException {
         Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
             @Override
@@ -118,5 +129,32 @@ public class ArchiveZipper {
                 return FileVisitResult.CONTINUE;
             }
         });
+    }
+
+    /**
+     * Deletes older zip files in the zip output directory if more than maxZipFiles exist.
+     */
+    private void cleanupOldZipFiles() {
+        try {
+            File zipDir = new File(zipOutputRoot);
+            if (!zipDir.exists() || !zipDir.isDirectory()) {
+                return;
+            }
+            // List zip files in the directory.
+            File[] zipFiles = zipDir.listFiles((dir, name) -> name.toLowerCase().endsWith(".zip"));
+            if (zipFiles == null || zipFiles.length <= maxZipFiles) {
+                return;
+            }
+            // Sort the files by last modified date (oldest first).
+            Arrays.sort(zipFiles, Comparator.comparingLong(File::lastModified));
+            int filesToDelete = zipFiles.length - maxZipFiles;
+            for (int i = 0; i < filesToDelete; i++) {
+                if (!zipFiles[i].delete()) {
+                    System.err.println("Failed to delete old zip file: " + zipFiles[i].getAbsolutePath());
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

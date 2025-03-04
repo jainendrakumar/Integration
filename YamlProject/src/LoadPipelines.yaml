@@ -1,0 +1,172 @@
+openapi: 3.0.3
+info:
+  title: Load Pipeline data Import
+  description: REST API to import Load Pipeline data.
+  version: 1.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/jainendrakumar/LoadPipeline/1.0.0
+  - url: https://localhost:8080
+tags:
+  - name: LoadPipeline
+    description: Load pipeline.
+paths:
+  /cris/dev/in/api/loadpipeline:
+    post:
+      tags:
+        - LoadPipeline
+      summary: Load Pipeline data
+      description: Load Pipeline data
+      operationId: loadpipeline
+      requestBody:
+        description: Load Pipeline data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoadPipelines'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoadPipelineResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoadPipelineResponse'
+components:
+  schemas:
+    LoadPipelines:
+      type: object
+      required:
+        - LoadPipeline
+      properties:
+        LoadPipeline:
+          type: array
+          items:
+            $ref: '#/components/schemas/LoadPipeline'
+    LoadPipeline:
+      type: object
+      properties:
+        LoadID:
+          type: string
+          minLength: 1
+          pattern: '.*[^ ].*'
+        StationSequence:
+          type: string
+          minLength: 1
+          pattern: '.*[^ ].*'
+        StationCode:
+          type: string
+          minLength: 1
+          pattern: '.*[^ ].*'
+        ExpectedArrivalTime:
+          type: string
+          example: 12/24/2020 12:35
+          description: Expected Arrival Time.
+          minLength: 1
+          pattern: '([0-9]+)\/([0-9]+)\/([0-9]{4})\s+([0-9]+):([:0-9]+)'
+        ExpectedDeaprtureTime:
+          type: string
+          example: 12/24/2020 12:35
+          description: Expected Departure Time.
+          pattern: '([0-9]+)\/([0-9]+)\/([0-9]{4})\s+([0-9]+):([:0-9]+)'
+        InwardLineNumber:
+          type: string
+        OutwardLineNumber:
+          type: string
+        ValidFlag:
+          type: string
+          minLength: 1
+          maxLength: 1
+          pattern: '.*[^ ].*'
+        NodalFlag:
+          type: string
+          minLength: 1
+          maxLength: 1
+          pattern: '.*[^ ].*'
+        ArrivalFlag:
+          type: string
+          minLength: 1
+          maxLength: 1
+          pattern: '.*[^ ].*'
+        ArrivalTime:
+          type: string
+          example: 12/24/2020 12:35
+          description: Arrival Time.
+          minLength: 1
+          pattern: '([0-9]+)\/([0-9]+)\/([0-9]{4})\s+([0-9]+):([:0-9]+)'
+        DepartureFlag:
+          type: string
+          minLength: 1
+          maxLength: 1
+          pattern: '.*[^ ].*'
+        DepartureTime:
+          type: string
+          example: 12/24/2020 12:35
+          description: Departure Time.
+          minLength: 1
+          pattern: '([0-9]+)\/([0-9]+)\/([0-9]{4})\s+([0-9]+):([:0-9]+)'
+        InwardDirrection:
+          type: string
+        OutwardDirection:
+          type: string
+        PLANNEDInterchangeFlag:
+          type: string
+          minLength: 1
+          maxLength: 1
+          pattern: '.*[^ ].*'
+        InwardDivisionFrom:
+          type: string
+        InwardDivisionTO:
+          type: string
+        OutwardDivisionFrom:
+          type: string
+        OutwardDivisionTo:
+          type: string
+        ActualInterchangeFlag:
+          type: string
+          minLength: 1
+          maxLength: 1
+          pattern: '.*[^ ].*'
+        OutwardInterchangeTime:
+          type: string
+          example: 12/24/2020 12:35
+          description: Outward Interchange Time.
+          minLength: 1
+          pattern: '([0-9]+)\/([0-9]+)\/([0-9]{4})\s+([0-9]+):([:0-9]+)'
+        InwardInterchangeTime:
+          type: string
+          example: 12/24/2020 12:35
+          description: Inward Interchange Time.
+          minLength: 1
+          pattern: '([0-9]+)\/([0-9]+)\/([0-9]{4})\s+([0-9]+):([:0-9]+)'
+        InwardZoneFrom:
+          type: string
+        InwardZoneTo:
+          type: string
+        OutwardZoneFrom:
+          type: string
+        OutwardZoneTo:
+          type: string
+        KM:
+          type: number
+        Gauge:
+          type: integer
+      required:
+        - LoadID
+        - StationSequence
+        - StationCode
+        - ExpectedArrivalTime
+    LoadPipelineResponse:
+      type: object
+      properties:
+        IsSuccess:
+          type: boolean
+        Message:
+          type: string

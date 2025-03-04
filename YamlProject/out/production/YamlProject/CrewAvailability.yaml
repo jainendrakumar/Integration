@@ -1,0 +1,139 @@
+openapi: 3.0.3
+info:
+  title: Crew Availability Import
+  description: REST API to import Crew Availability data.
+  version: 1.0.0
+servers:
+  - url: https://localhost:8080
+tags:
+  - name: CrewAvailability
+    description: Crew Availability validation.
+paths:
+  /cris/dev/in/api/crewavailability:
+    post:
+      tags:
+        - CrewAvailability
+      summary: Crew Availability Validation
+      description: Crew Availability Validation for data from Crew Management System from Designated crew lobbies
+      operationId: crewvalidation
+      requestBody:
+        description: Crew Availability data for Validation
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrewAvailability'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CrewAvailabilityResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CrewAvailabilityBadRequest'
+components:
+  schemas:
+    CrewAvailabilities:
+      type: object
+      properties:
+        Equipment:
+          type: array
+          items:
+            $ref: '#/components/schemas/CrewAvailability'
+    CrewAvailability:
+      type: object
+      properties:
+        ID:
+          type: string
+          minLength: 1
+          pattern: '.*[^ ].*'
+        Name:
+          type: string
+          minLength: 1
+          pattern: '.*[^ ].*'
+        OrgDesig:
+          type: string
+          minLength: 1
+          pattern: '.*[^ ].*'
+        OffDesig:
+          type: string
+          minLength: 1
+          pattern: '.*[^ ].*'
+        SignOffTime:
+          type: string
+          minLength: 1
+          pattern: '.*[^ ].*'
+        AvailableTime:
+          type: string
+          minLength: 1
+          pattern: '.*[^ ].*'
+        AvailableSttn:
+          type: string
+          minLength: 1
+          pattern: '.*[^ ].*'
+        RestHrs:
+          type: integer
+        Cadre:
+          type: string
+          minLength: 1
+          pattern: '.*[^ ].*'
+        Traction:
+          type: string
+          minLength: 1
+          pattern: '.*[^ ].*'
+        HQorOS:
+          type: string
+          minLength: 1
+          pattern: '.*[^ ].*'
+        CRorUR:
+          type: string
+          minLength: 1
+          pattern: '.*[^ ].*'
+        CrewType:
+          type: string
+          minLength: 1
+          pattern: '.*[^ ].*'
+      $ref:
+      required:
+        - ID
+        - Name
+        - OrgDesig
+        - OffDesig
+        - SignOffTime
+        - AvailableTime
+        - AvailableSttn
+        - RestHrs
+        - Cadre
+        - Traction
+        - HQorOS
+        - CRorUR
+        - CrewType
+    ErrorMessage:
+      type: object
+      properties:
+        Key:
+          type: string
+        Message:
+          type: string
+    Response:
+      type: object
+      properties:
+        IsSuccess:
+          type: boolean
+        Message:
+          type: string
+        Errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/CrewAvailabilityErrorMessage'
+    BadRequest:
+      type: object
+      properties:
+        Message:
+          type: string
+          enum: ["Please check if all required fields are populated and contain data in correct format. Required fields are: {ID, Name, OrgDesig, OffDesig, SignOffTime, AvailableTime, AvailableSttn, RestHrs, Cadre, Traction, HQorOS, CRorUR, CrewType}"]

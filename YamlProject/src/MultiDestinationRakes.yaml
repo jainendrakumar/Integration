@@ -1,0 +1,92 @@
+openapi: 3.0.3
+info:
+  title: Multi Destination Rakes data Import
+  description: REST API to import Multi Destination Rakes data.
+  version: 1.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/jainendrakumar/MultiDestinationRake/1.0.0
+  - url: https://localhost:8080
+tags:
+  - name: MultiDestinationRake
+    description: Multi Destination Rake.
+paths:
+  /cris/dev/in/api/multidestinationrake:
+    post:
+      tags:
+        - MultiDestinationRake
+      summary: Multi Destination Rakes data
+      description: Multi Destination Rakes data
+      operationId: multidestinationrakes
+      requestBody:
+        description: Multi Destination Rakes data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MultiDestinationRakes'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MultiDestinationRakeResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MultiDestinationRakeResponse'
+components:
+  schemas:
+    MultiDestinationRakes:
+      type: object
+      required:
+        - MultiDestinationRake
+      properties:
+        MultiDestinationRake:
+          type: array
+          items:
+            $ref: '#/components/schemas/MultiDestinationRake'
+    MultiDestinationRake:
+      type: object
+      properties:
+        RAVRAKEID:
+          type: string
+          example: "PWL 170124114244"
+          minLength: 1
+          pattern: '.*[^ ].*'
+        RAVSTCKTYPE:
+          type: string
+          example: "BCN"
+          minLength: 1
+          pattern: '.*[^ ].*'
+        RACLEFLAG:
+          type: string
+          example: "L"
+          description: LE Flag.
+          minLength: 1
+          pattern: '.*[^ ].*'
+        RAVSTTNFROM:
+          type: string
+          example: "PWL"
+          minLength: 1
+          pattern: '.*[^ ].*'
+        RAVSTTNTO:
+          type: string
+          example: "PNP"
+          minLength: 1
+          pattern: '.*[^ ].*'
+        RANUNTS:
+          type: number
+          example: 10
+          minLength: 1
+    MultiDestinationRakeResponse:
+      type: object
+      properties:
+        IsSuccess:
+          type: boolean
+        Message:
+          type: string

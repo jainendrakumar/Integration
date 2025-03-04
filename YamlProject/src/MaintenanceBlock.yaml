@@ -1,0 +1,141 @@
+openapi: 3.0.3
+info:
+  title: Maintenance Block Import
+  description: REST API to import Maintenance Block data.
+  version: 1.0.0
+servers:
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/jainendrakumar/MaintenanceBlock/1.0.0
+  - url: https://localhost:8080
+tags:
+  - name: MaintenanceBlock
+    description: Maintenance Block validation.
+paths:
+  /cris/dev/in/api/maintenanceblock:
+    post:
+      tags:
+        - MaintenanceBlock
+      summary: Maintenance Block Validation
+      description: A request for a maintenance block is received by the chief
+        controller and can be planned at any time of the day. The request is
+        usually received a day in advance. In planning maintenance block, chief
+        controller aims to minimize the impact towards train services and
+        tentatively confirms the timing of the blocks for the next day. The
+        lines/block sections need to be blocked during the time for when the
+        maintenance is requested.
+      operationId: maintenanceblock
+      requestBody:
+        description: Maintenance Block data for Validation
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MaintenanceBlocks"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MaintenanceBlockResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MaintenanceBlockResponse"
+components:
+  schemas:
+    MaintenanceBlocks:
+      type: object
+      required:
+        - MaintenanceBlock
+      properties:
+        MaintenanceBlock:
+          type: array
+          items:
+            $ref: "#/components/schemas/MaintenanceBlock"
+    MaintenanceBlock:
+      type: object
+      properties:
+        ID:
+          type: string
+          example: PRYJ12201435
+          description: Block Restriction ID
+          minLength: 1
+          pattern: .*[^ ].*
+        DepartmentRemark:
+          type: string
+          example: ENGG-TRACK MACHINE WORKING
+          description: Department remark.
+          minLength: 1
+          pattern: .*[^ ].*
+        StartApproved:
+          type: string
+          example: 12/24/2020 12:35
+          description: Requested start time.
+          minLength: 1
+          pattern: ([0-9]+)\/([0-9]+)\/([0-9]{4})\s+([0-9]+):([:0-9]+)
+        EndApproved:
+          type: string
+          example: 12/24/2020 12:35
+          description: Requested End time.
+          minLength: 1
+          pattern: ([0-9]+)\/([0-9]+)\/([0-9]{4})\s+([0-9]+):([:0-9]+)
+        PermittedStartTime:
+          type: string
+          example: 12/24/2020 12:35
+          description: Permitted start time.
+          minLength: 1
+          pattern: ([0-9]+)\/([0-9]+)\/([0-9]{4})\s+([0-9]+):([:0-9]+)
+        PermittedEndTime:
+          type: string
+          example: 12/24/2020 12:35
+          description: Permitted End time.
+          minLength: 1
+          pattern: ([0-9]+)\/([0-9]+)\/([0-9]{4})\s+([0-9]+):([:0-9]+)
+        StartActual:
+          type: string
+          example: 12/24/2020 12:35
+          description: Actual start time.
+          minLength: 1
+          pattern: ([0-9]+)\/([0-9]+)\/([0-9]{4})\s+([0-9]+):([:0-9]+)
+        EndActual:
+          type: string
+          example: 12/24/2020 12:35
+          description: Actual end time.
+          minLength: 1
+          pattern: ([0-9]+)\/([0-9]+)\/([0-9]{4})\s+([0-9]+):([:0-9]+)
+        BlockExtensionRequestedEndTime:
+          type: string
+          example: 12/24/2020 12:35
+          description: Block Extension Requested Start Time.
+          minLength: 1
+          pattern: ([0-9]+)\/([0-9]+)\/([0-9]{4})\s+([0-9]+):([:0-9]+)
+        BlockExtensionPermittedEndTime:
+          type: string
+          example: 12/24/2020 12:35
+          description: Block Extension Requested End Time.
+          minLength: 1
+          pattern: ([0-9]+)\/([0-9]+)\/([0-9]{4})\s+([0-9]+):([:0-9]+)
+        MaintenanceBlockType:
+          type: string
+          example: ENGG-CONST.
+          description: Maintenance Block Type.
+          minLength: 1
+          pattern: .*[^ ].*
+        MaintenanceUpdate:
+          type: string
+          example: CBUP
+          description: Maintenance Status Update.
+          minLength: 1
+          pattern: .*[^ ].*
+      required:
+        - ID
+    MaintenanceBlockResponse:
+      type: object
+      properties:
+        IsSuccess:
+          type: boolean
+        Message:
+          type: string

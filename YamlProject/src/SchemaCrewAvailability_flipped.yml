@@ -1,0 +1,69 @@
+---
+$schema: "http://json-schema.org/draft-07/schema#"
+title: "Generated schema for Root"
+type: "array"
+items:
+  type: "object"
+  properties:
+    CrewLobby:
+      type: "string"
+    RequestID:
+      type: "string"
+    NoOfLoadID:
+      type: "number"
+    CrewLobbyDetails:
+      type: "array"
+      items:
+        type: "object"
+        properties:
+          LoadID:
+            type: "string"
+          OriginStation:
+            type: "string"
+          DestinationStation:
+            type: "string"
+          CrewChangePlanID:
+            type: "string"
+          NrOfLPG:
+            type: "number"
+          NrOfALP:
+            type: "number"
+          NrOfGD:
+            type: "number"
+          StationSequences:
+            type: "array"
+            items:
+              type: "object"
+              properties:
+                StationCode:
+                  type: "string"
+                StationSeqNr:
+                  type: "number"
+                Traction:
+                  type: "string"
+                ETA:
+                  type: "string"
+                ETD:
+                  type: "string"
+              required:
+              - "StationCode"
+              - "StationSeqNr"
+              - "Traction"
+              - "ETA"
+              - "ETD"
+          From Station:
+            type: "string"
+          ToStation:
+            type: "string"
+        required:
+        - "LoadID"
+        - "CrewChangePlanID"
+        - "NrOfLPG"
+        - "NrOfALP"
+        - "NrOfGD"
+        - "StationSequences"
+  required:
+  - "CrewLobby"
+  - "RequestID"
+  - "NoOfLoadID"
+  - "CrewLobbyDetails"

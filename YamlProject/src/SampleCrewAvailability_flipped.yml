@@ -1,0 +1,51 @@
+---
+- CrewLobby: "DHN"
+  RequestID: "12345678"
+  NoOfLoadID: 2
+  CrewLobbyDetails:
+  - LoadID: "L1234"
+    OriginStation: "Kolkatta"
+    DestinationStation: "Lucknow"
+    CrewChangePlanID: "L1234-CC1"
+    NrOfLPG: 1
+    NrOfALP: 1
+    NrOfGD: 1
+    StationSequences:
+    - StationCode: "XYZ"
+      StationSeqNr: 1
+      Traction: "ELEC"
+      ETA: ""
+      ETD: ""
+    - StationCode: "DEF"
+      StationSeqNr: 2
+      Traction: "ELEC"
+      ETA: ""
+      ETD: ""
+    - StationCode: "GHI"
+      StationSeqNr: 3
+      Traction: "ELEC"
+      ETA: ""
+      ETD: ""
+  - LoadID: "L5678"
+    From Station: "A"
+    ToStation: "B"
+    NrOfLPG: 1
+    NrOfALP: 2
+    NrOfGD: 2
+    CrewChangePlanID: "L1234-CC1"
+    StationSequences:
+    - StationCode: "MNO"
+      StationSeqNr: 1
+      Traction: "ELEC"
+      ETA: ""
+      ETD: ""
+    - StationCode: "DEF"
+      StationSeqNr: 2
+      Traction: "ELEC"
+      ETA: ""
+      ETD: ""
+    - StationCode: "GHI"
+      StationSeqNr: 3
+      Traction: "ELEC"
+      ETA: ""
+      ETD: ""

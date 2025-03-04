@@ -1,0 +1,106 @@
+openapi: 3.0.3
+info:
+  title: Crew Changing point Import
+  description: REST API to import Crew Changing point data.
+  version: 1.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/jainendrakumar/CrewChangingPoints/1.0.0
+  - url: https://localhost:8080
+tags:
+  - name: CrewAvailability
+    description: Crew Availability validation.
+paths:
+  /cris/dev/in/api/crewavailability:
+    post:
+      tags:
+        - CrewChangingPoints
+      summary: Crew Changing point Validation
+      description: Crew Changing point Validation for data from Crew Management System from Designated crew lobbies
+      operationId: crewchangingpointvalidation
+      requestBody:
+        description: Crew Changing point data for Validation
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrewChangingPoints'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CrewChangingPointResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CrewChangingPointBadRequest'
+components:
+  schemas:
+    CrewChangingPoints:
+      type: object
+      properties:
+        CrewChangingPoint:
+          type: array
+          items:
+            $ref: '#/components/schemas/CrewChangingPoint'
+    CrewChangingPoint:
+      type: object
+      properties:
+        ZONE_CODE_C:
+          type: string
+          example: "EC"
+          description: Zone Code
+          minLength: 1
+          pattern: '.*[^ ].*'
+        DIV_CODE_C:
+          type: string
+          example: "DDU"
+          description: Division Code
+          minLength: 1
+          pattern: '.*[^ ].*'
+        LOBBY_CODE_C:
+          type: string
+          example: "ANH"
+          description: Lobby Code
+          minLength: 1
+          pattern: '.*[^ ].*'
+        STTN_FULL_NAME_V:
+          type: string
+          example: "DIESEL CREW LOBBY"
+          description: Lobby Station Full Name
+          minLength: 1
+          pattern: '.*[^ ].*'
+      required:
+        - ZONE_CODE_C
+        - DIV_CODE_C
+        - LOBBY_CODE_C
+        - STTN_FULL_NAME_V
+    CrewChangingPointErrorMessage:
+      type: object
+      properties:
+        Key:
+          type: string
+        Message:
+          type: string
+    CrewChangingPointResponse:
+      type: object
+      properties:
+        IsSuccess:
+          type: boolean
+        Message:
+          type: string
+        Errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/CrewChangingPointErrorMessage'
+    CrewChangingPointBadRequest:
+      type: object
+      properties:
+        Message:
+          type: string
+          enum: ["Please check if all required fields are populated and contain data in correct format. Required fields are: {ZONE_CODE_C, DIV_CODE_C, LOBBY_CODE_C, STTN_FULL_NAME_V}"]

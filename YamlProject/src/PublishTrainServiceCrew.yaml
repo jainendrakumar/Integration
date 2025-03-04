@@ -1,0 +1,231 @@
+openapi: 3.0.3
+info:
+  title: Publish Train Service Crews information to CRIS system.
+  description: For the train service(s) crew availabilities, the “DELMIA Quintiq Service Planner (DQSP)” facilitates crew validation for determining the most efficient duty combination, considering the railway crew’s availability information from CMS. It covers all Freight trains and their related train service crew activities. This validation is predominantly performed for a defined period of time (i.e., 16hrs) in the day of operational horizon. And, works in conjunction with Crew Management System (CMS), existing at CRIS. Based on this validation result, CRIS can perform required crew booking. The crew validation confirmation details are interfaced back to DQSP from CMS, confirming OK or NOT-OK for each crew working type.
+  version: 1.0.0
+
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/jainendrakumar/TrainServiceCrewRequestResponse/1.0.0
+  - url: https://virtserver.swaggerhub.com/jainendrakumar/TrainServiceCrewRequests/1.0.0
+    description: SwaggerHub API Auto Mocking
+  - url: https://localhost:8080
+    description: Service hosting for TrainServiceCrewRequests
+
+paths:
+  /cris/dev/out/api/TrainServiceCrewRequests:
+    post:
+      summary: Publishes the details of number of crew change personnel required for each load id, considering default roles.
+      description: Publishes the details of all the crew lobbies crew change information and the associated train services. The Train service route and traction information is also interfaced to CMS, which will be then used in the crew booking process on the CMS side.
+      operationId: trainservicecrewrequests
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrainServiceCrewRequests'
+        required: true
+      responses:
+        '200':
+          description: Successful operation receives the crew validation feedback from CMS, for the published crew change plan (i.e., OK/NOT-OK confirmations)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainServiceCrewResponses'
+        '400':
+          description: Bad request or incomplete publish result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+        '431':
+          description: Timeout has happened.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+components:
+  schemas:
+    TrainServiceCrewRequests:
+      type: object
+      required:
+        - TrainServiceCrewRequest
+      properties:
+        TrainServiceCrewRequest:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrainServiceCrewRequest'
+    TrainServiceCrewRequest:
+      type: object
+      properties:
+        CrewLobby:
+          type: string
+          example: "DHN"
+          minLength: 1
+          pattern: '.*[^ ].*'
+        RequestID:
+          type: string
+          example: "12345678"
+          minLength: 1
+          pattern: '.*[^ ].*'
+        TotNoOfCrewChangePlanID:
+          type: string
+          example: "2"
+          minLength: 1
+          pattern: '.*[^ ].*'
+        CrewLobbyDetails:
+          type: array
+          items:
+            $ref: '#/components/schemas/CrewLobbyDetails'
+      required:
+        - CrewLobby
+        - RequestID
+        - TotNoOfCrewChangePlanID
+        - CrewLobbyDetails
+    CrewLobbyDetails:
+      type: object
+      properties:
+        CrewLobbyDetail:
+          type: array
+          items:
+            $ref: '#/components/schemas/CrewLobbyDetail'
+    CrewLobbyDetail:
+      type: object
+      properties:
+        LoadID:
+          type: string
+          example: "L1234"
+          minLength: 1
+          pattern: '.*[^ ].*'
+        OriginStation:
+          type: string
+          example: "Kolkatta"
+          minLength: 1
+          pattern: '.*[^ ].*'
+        DestinationStation:
+          type: string
+          example: "Lucknow"
+          minLength: 1
+          pattern: '.*[^ ].*'
+        CrewChangePlanID:
+          type: string
+          example: "L1234-CC1"
+          minLength: 1
+          pattern: '.*[^ ].*'
+        NrOfLPG:
+          type: number
+          example: 1
+          minLength: 1
+          maxLength: 1
+        NrOfALP:
+          type: number
+          example: 1
+          minLength: 1
+          maxLength: 1
+        NrOfGD:
+          type: number
+          minLength: 1
+          maxLength: 1
+        StationSequences:
+          type: array
+          items:
+            $ref: '#/components/schemas/StationSequence'
+    StationSequence:
+      type: object
+      properties:
+        StationCode:
+          type: string
+          example: "XYZ"
+          minLength: 1
+          pattern: '.*[^ ].*'
+        StationSeqNr:
+          type: number
+          example: 1
+          minLength: 1
+        Traction:
+          type: string
+          example: 1
+          minLength: 1
+          pattern: '.*[^ ].*'
+        ETA:
+          type: string
+          example: 12/24/2020 12:35
+          description: ETA.
+          minLength: 1
+          pattern: ([0-9]+)\/([0-9]+)\/([0-9]{4})\s+([0-9]+):([:0-9]+)
+        ETD:
+          type: string
+          example: 12/24/2020 12:35
+          description: ETD.
+          minLength: 1
+          pattern: ([0-9]+)\/([0-9]+)\/([0-9]{4})\s+([0-9]+):([:0-9]+)
+    TrainServiceCrewResponses:
+      type: object
+      properties:
+        TrainServiceCrewResponse:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrainServiceCrewResponse'
+    TrainServiceCrewResponse:
+      type: object
+      properties:
+        CrewLobby:
+          type: string
+          example: "DHN"
+          minLength: 1
+          pattern: '.*[^ ].*'
+        RequestID:
+          type: string
+          example:
+          minLength: 1
+          pattern: '.*[^ ].*'
+        CrewLobbyDetails:
+          type: object
+          properties:
+            CrewLobbyDetailResponse:
+              type: array
+              items:
+                $ref: '#/components/schemas/CrewLobbyDetailResponse'
+    CrewLobbyDetailResponse:
+      type: object
+      properties:
+        LoadID:
+          type: string
+          example: "L1234"
+          minLength: 1
+          pattern: '.*[^ ].*'
+        CrewChangePlanID:
+          type: string
+          example: "L1234-CC1"
+          minLength: 1
+          pattern: '.*[^ ].*'
+        crewreqpilot:
+          type: string
+          example: "OK"
+          minLength: 2
+          maxLength: 3
+          enum:
+            - OK
+            - NOK
+        crewguard:
+          type: string
+          example: "OK"
+          minLength: 2
+          maxLength: 3
+          enum:
+            - OK
+            - NOK
+        role:
+          type: string
+          example: "NOK"
+          minLength: 2
+          maxLength: 3
+          enum:
+            - OK
+            - NOK
+    BadRequest:
+      type: object
+      properties:
+        Message:
+          type: string
+          enum: ["Please check if all required fields are populated for TrainServiceCrewRequests and contain data in correct format."]

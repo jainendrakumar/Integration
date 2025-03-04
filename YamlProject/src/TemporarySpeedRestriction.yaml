@@ -1,0 +1,91 @@
+openapi: 3.0.3
+info:
+  title: Temporary Speed Restrictions Import
+  description: REST API to import Temporary Speed Restrictions data.
+  version: 1.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/jainendrakumar/TemporarySpeedRestriction/1.0.0
+  - description: SwaggerHub API Auto Mocking
+    url: https://localhost:8080
+tags:
+  - name: TemporarySpeedRestriction
+    description: Temporary Speed Restriction validation.
+paths:
+  /cris/dev/in/api/temporaryspeedrestriction:
+    post:
+      tags:
+        - TemporarySpeedRestriction
+      summary: Temporary Speed Restriction
+      description: Temporary Speed Restriction
+      operationId: temporaryspeedrestriction
+      requestBody:
+        description: Temporary Speed Restriction data Validation
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemporarySpeedRestrictions'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemporarySpeedRestrictionResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemporarySpeedRestrictionResponse'
+components:
+  schemas:
+    TemporarySpeedRestrictions:
+      type: object
+      required:
+        - TemporarySpeedRestriction
+      properties:
+        TemporarySpeedRestriction:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemporarySpeedRestriction'
+    TemporarySpeedRestriction:
+      type: object
+      properties:
+        TSRNumber:
+          type: string
+          example: "PRYJ1220196"
+          description: Caution Order Number. The unique identifier of the TSR.
+          minLength: 1
+          pattern: '.*[^ ].*'
+        StartApproved:
+          type: string
+          example: "12/24/2020 10:00:00"
+          description: The approved start date and time of the TSR.
+          minLength: 1
+          pattern: '(1[0-2]|0[1-9])/(3[01]|[12][0-9]|0[1-9])/[0-9]{4}\s+[:0-9)]*[\sAMPM]*'
+        EndApproved:
+          type: string
+          example: "12/24/2020 10:00:00"
+          description: The approved end date and time of the TSR.
+          minLength: 1
+          pattern: '(1[0-2]|0[1-9])/(3[01]|[12][0-9]|0[1-9])/[0-9]{4}\s+[:0-9)]*[\sAMPM]*'
+        Status:
+          type: string
+          example: ""
+          description: Status
+          minLength: 1
+          pattern: '.*[^ ].*'
+      required:
+        - TSRNumber
+        - StartApproved
+        - EndApproved
+    TemporarySpeedRestrictionResponse:
+      type: object
+      properties:
+        IsSuccess:
+          type: boolean
+        Message:
+          type: string

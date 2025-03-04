@@ -1,0 +1,112 @@
+openapi: 3.0.3
+info:
+  title: Crew Availability Import
+  description: REST API to import Crew Availability data.
+  version: 1.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/jainendrakumar/CrewAvailability/1.0.0
+  - url: https://localhost:8080
+tags:
+  - name: CrewAvailability
+    description: Crew Availability validation.
+paths:
+  /cris/dev/in/api/crewavailability:
+    post:
+      tags:
+        - CrewAvailability
+      summary: Crew Availability Validation
+      description: Crew Availability Validation for data from Crew Management System from Designated crew lobbies
+      operationId: crewvalidation
+      requestBody:
+        description: Crew Availability data for Validation
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrewAvailabilities'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CrewAvailabilityResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CrewAvailabilityResponse'
+components:
+  schemas:
+    CrewAvailabilities:
+      type: object
+      required:
+        - CrewAvailability
+      properties:
+        CrewAvailability:
+          type: array
+          items:
+            $ref: '#/components/schemas/CrewAvailability'
+    CrewAvailability:
+      type: object
+      properties:
+        CREW_ID_V:
+          type: string
+          example: "BRKA1364"
+          description: Crew ID
+          minLength: 1
+          pattern: '.*[^ ].*'
+        NAME_V:
+          type: string
+          example: "RITU RANJAN"
+          description: Name of Crew
+          minLength: 1
+          pattern: '.*[^ ].*'
+        CREW_TYPE_C:
+          type: string
+          example: "SALP"
+          description: The Crew Type. Not put in enum as not sure of all possiblities like SALP, LPG, ALP etc.
+          minLength: 1
+          pattern: '.*[^ ].*'
+        CREW_DESIG_V:
+          type: string
+          example: "LOCO PILOT GOODS"
+          description: Crew Designation
+          minLength: 1
+          pattern: '.*[^ ].*'
+        CREW_AVAIL_TIME_D:
+          type: string
+          example: "08-07-2023  14:15:00"
+          description: Date used in the samples are as "08-07-2023  14:15:00". So the regular expression will validate this type of dates.
+          minLength: 1
+          pattern: '([0-9]{2})-(?:[0-9]{2})-([0-9]{4})\s+([0-9]{1,2}):(?:[0-9]{2})'
+        CREW_AVAIL_STTN_C:
+          type: string
+          example: "BRKA"
+          description: Crew Available at Station
+          minLength: 1
+          pattern: '.*[^ ].*'
+        TRCTN_C:
+          type: string
+          example: "DSL+ELEC"
+          description: Traction
+          minLength: 1
+          pattern: '.*[^ ].*'
+      required:
+        - CREW_ID_V
+        - NAME_V
+        - CREW_TYPE_C
+        - CREW_DESIG_V
+        - CREW_AVAIL_TIME_D
+        - CREW_AVAIL_STTN_C
+        - TRCTN_C
+    CrewAvailabilityResponse:
+      type: object
+      properties:
+        IsSuccess:
+          type: boolean
+        Message:
+          type: string

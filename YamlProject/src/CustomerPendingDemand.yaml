@@ -1,0 +1,155 @@
+openapi: 3.0.3
+info:
+  title: Customer Pending Demand Import
+  description: REST API to import Customer Pending Demand data.
+  version: 1.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/jainendrakumar/CustomerPendingDemand/1.0.0
+  - url: https://localhost:8080/cris/dev/in/api/customerpendingdemand
+tags:
+  - name: CustomerPendingDemand
+    description: Customer Pending Demand validation.
+paths:
+  /cris/dev/in/api/customerpendingdemand:
+    post:
+      tags:
+        - CustomerPendingDemand
+      summary: Customer Pending Demand Validation
+      description: Customer pending demand is only relevant for “what-if scenario”, which is a snapshot from operational plan. Chief controllers/deputy controllers (running) are able to generate optimized route for selected demands and observe the impact towards the overall network situation without affecting the operational plan. This enables chief controllers/deputy controllers (running) to make more informed decision by selecting which pending demand to fulfill.
+      operationId: customerpendingdemand
+      requestBody:
+        description: Customer Pending Demand data for Validation
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerPendingDemands'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerPendingDemandResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerPendingDemandBadRequest'
+components:
+  schemas:
+    CustomerPendingDemands:
+      type: object
+      required:
+        - CustomerPendingDemand
+      properties:
+        CustomerPendingDemand:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomerPendingDemand'
+          required:
+            - CustomerPendingDemand
+    CustomerPendingDemand:
+      type: object
+      properties:
+        DEMANDID:
+          type: string
+          example: "AUBR3/11032023"
+          description: Demand ID
+          minLength: 1
+          pattern: '.*[^ ].*'
+        DVSNFROM:
+          type: string
+          example: "DDU"
+          description: Division from.
+          minLength: 1
+          pattern: '.*[^ ].*'
+        STATIONFROM:
+          type: string
+          example: "KIR"
+          description: Origin Station.
+          minLength: 1
+          pattern: '.*[^ ].*'
+        STATIONTO:
+          type: string
+          example: "BJU"
+          description: Destination Station.
+          minLength: 1
+          pattern: '.*[^ ].*'
+        RAKEPIECEMEAL:
+          type: string
+          example: "R"
+          description: Demand is of Rake or Piecemeal Type.
+          minLength: 1
+          maxLength: 1
+        RAKETYPE:
+          type: string
+          example: "BCN"
+          description: Rake type.
+          minLength: 1
+          pattern: '.*[^ ].*'
+        PRIORITYCLASS:
+          type: string
+          example: "D"
+          description: Priority class.
+          minLength: 1
+          maxLength: 1
+        LOADUNITS:
+          type: number
+          example: 42
+          description: Load units.
+          minLength: 1
+        CCINFO:
+          type: string
+          example: "CC+6"
+          description: Cc information.
+          minLength: 1
+          pattern: '.*[^ ].*'
+        LOADID:
+          type: string
+          example: "FSD0001"
+          description: Service Request created for this Pending Demand.
+          minLength: 1
+          pattern: '.*[^ ].*'
+        ISCOMBINED:
+          type: string
+          example: "Y"
+          description: Pending Demand is combined with another Pending Demand
+          enum:
+            - Y
+            - N
+      required:
+        - DEMANDID
+        - STATIONFROM
+        - STATIONTO
+        - RAKEPIECEMEAL
+        - DVSNFROM
+        - RAKETYPE
+        - PRIORITYCLASS
+        - LOADUNITS
+        - CCINFO
+        - LOADID
+        - ISCOMBINED
+    CustomerPendingDemandResponse:
+      type: object
+      properties:
+        IsSuccess:
+          type: string
+          enum:
+            - true
+            - false
+        Message:
+          type: string
+    CustomerPendingDemandBadRequest:
+      type: object
+      properties:
+        IsSuccess:
+          type: string
+          enum:
+            - true
+            - false
+        Message:
+          type: string

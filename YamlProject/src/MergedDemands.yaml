@@ -1,0 +1,92 @@
+openapi: 3.0.3
+info:
+  title: Merged Demands data Import
+  description: REST API to import Merged Demands data.
+  version: 1.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/jainendrakumar/MergedDemand/1.0.0
+  - url: https://localhost:8080
+tags:
+  - name: MergedDemand
+    description: Merged Demands.
+paths:
+  /cris/dev/in/api/mergeddemand:
+    post:
+      tags:
+        - MergedDemand
+      summary: Merged Demands data
+      description: Merged Demands data
+      operationId: mergeddemand
+      requestBody:
+        description: Merged Demands data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MergedDemands'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MergedDemandsResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MergedDemandsResponse'
+components:
+  schemas:
+    MergedDemands:
+      type: object
+      required:
+        - MergedDemand
+      properties:
+        MergedDemand:
+          type: array
+          items:
+            $ref: '#/components/schemas/MergedDemand'
+    MergedDemand:
+      type: object
+      properties:
+        TRANSACTIONID:
+          type: string
+          example: 18012024150008
+          minLength: 1
+          pattern: '.*[^ ].*'
+        DEMANDID:
+          type: string
+          example: "KART2/18012024"
+        TRANSACTIONTIME:
+          type: string
+          example: 12/24/2020 12:35
+          description: Transaction time.
+          minLength: 1
+          pattern: '([0-9]+)\/([0-9]+)\/([0-9]{4})\s+([0-9]+):([:0-9]+)'
+        CLUBBEDorNORMALDEMAND:
+          type: string
+          example: "Y"
+          minLength: 1
+          maxLength: 1
+          enum:
+            - C
+            - N
+        DEMANDSTTN:
+          type: string
+          example: "KART"
+        DEMANDUNITS:
+          type: number
+          example: 10
+      required:
+        - TRANSACTIONID
+    MergedDemandsResponse:
+      type: object
+      properties:
+        IsSuccess:
+          type: boolean
+        Message:
+          type: string

@@ -1,0 +1,185 @@
+openapi: 3.0.3
+info:
+  title: Crews Booked Import
+  description: REST API to import Crews Booked data. Crew booking should be made available from CMS for a crew change at various crew lobby locations.
+  version: 1.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/jainendrakumar/CrewsBooked/1.0.0
+  - url: https://localhost:8080
+tags:
+  - name: CrewAvailability
+    description: Crew Availability validation.
+paths:
+  /cris/dev/in/api/crewavailability:
+    post:
+      tags:
+        - CrewsBooked
+      summary: Crews Booked Validation
+      description: Crews Booked Validation for data from Crew Management System from Designated crew lobbies
+      operationId: crewsbooked
+      requestBody:
+        description: Crews Booked data for Validation
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrewsBooked'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CrewsBookedResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CrewAvailabilityBadRequest'
+components:
+  schemas:
+    CrewsBooked:
+      type: object
+      properties:
+        CrewBooked:
+          type: array
+          items:
+            $ref: '#/components/schemas/CrewBooked'
+    CrewBooked:
+      type: object
+      properties:
+        TA_SNO_N:
+          type: string
+          example: KIR/25-08-2023/10.131.207.209/36
+          description: T_SNO_N
+          minLength: 1
+          pattern: '.*[^ ].*'
+        TALOBBY:
+          type: string
+          example: "KIR"
+          description: TA Lobby
+          minLength: 1
+          pattern: '.*[^ ].*'
+        TATYPE:
+          type: string
+          example: "GEN"
+          description: TA Type
+          minLength: 1
+          pattern: '.*[^ ].*'
+        ORDERINGTIME:
+          type: string
+          example: "8/25/2023 6:20"
+          description: Booking time of the Crew when assigned to.
+          minLength: 1
+          pattern: '([0-9]+)\/([0-9]+)\/([0-9]{4})\s+([0-9]+):([0-9]+)'
+        STTNFROM:
+          type: string
+          example: "KIR"
+          description: Crew sign on station or Crew Lobby Station
+          minLength: 1
+          pattern: '.*[^ ].*'
+        STTNTO:
+          type: string
+          example: "BJU"
+          description: Crew sign off station or Crew Lobby Stattion for Sign off
+          minLength: 1
+          pattern: '.*[^ ].*'
+        ROUTE:
+          type: number
+          example: 3476
+          description: Route id or name
+          minLength: 1
+        TRACTION:
+          type: string
+          example: "ELEC"
+          description: Traction type
+          minLength: 1
+          pattern: '.*[^ ].*'
+        DUTYTYPE:
+          type: string
+          example: "WR"
+          description: Duty type
+        SERVICETYPE:
+          type: string
+          example: "CCHP"
+          description: Service Type
+          minLength: 1
+          pattern: '.*[^ ].*'
+        TRAINNO:
+          type: number
+          example: 5772
+          description: Train service number
+          minLength: 1
+        CREWIDCALLED:
+          type: string
+          example: "MLDA1298"
+          description: ID of the booked crew personnel
+          minLength: 1
+          pattern: '.*[^ ].*'
+        CALLBOOKLOBBY:
+          type: string
+          example: "KIR"
+          description: Call book lobby
+          minLength: 1
+          pattern: '.*[^ ].*'
+        CALLACKNOWLEDGED:
+          type: string
+          example: "YS"
+          description: Call Acknowledged
+          minLength: 1
+          pattern: '.*[^ ].*'
+        TAMODE:
+          type: string
+          example: "CMSTA"
+          description: TA Mode
+          minLength: 1
+          pattern: '.*[^ ].*'
+        FOISLOADID:
+          type: string
+          example: "IORGIRPN24082023221540"
+          description: LoadID of the Train Service
+          minLength: 1
+          pattern: '.*[^ ].*'
+      required:
+        - TA_SNO_N
+        - TATYPE
+        - ORDERINGTIME
+        - STTNFROM
+        - STTNTO
+        - ROUTE
+        - TRACTION
+        - DUTYTYPE
+        - SERVICETYPE
+        - TRAINNO
+        - CREWIDCALLED
+        - CALLBOOKLOBBY
+        - CALLACKNOWLEDGED
+        - TAMODE
+        - FOISLOADID
+    CrewsBookedErrorMessage:
+      type: object
+      properties:
+        Key:
+          type: string
+        Message:
+          type: string
+    CrewsBookedResponse:
+      type: object
+      properties:
+        IsSuccess:
+          type: boolean
+        Message:
+          type: string
+        Errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/CrewsBookedErrorMessage'
+    CrewAvailabilityBadRequest:
+      type: object
+      properties:
+        Message:
+          type: string
+          enum: ["Please check if all required fields are populated and contain data in correct format. Required fields are: {TA_SNO_N, TATYPE, ORDERINGTIME, STTNFROM, STTNTO, ROUTE, TRACTION, DUTYTYPE, SERVICETYPE, TRAINNO, CREWIDCALLED, CALLBOOKLOBBY, CALLACKNOWLEDGED, TAMODE }"]

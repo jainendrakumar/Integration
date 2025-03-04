@@ -1,0 +1,108 @@
+openapi: 3.0.3
+info:
+  title: Rescheduled non Freight Train data Import
+  description: For non-freight trains, the application receives Train Service re-schedule as input, against which the schedule for the freight train needs to be adjusted. If there is any delay at source then that needs to be considered to identify conflicts with the freight train schedules. Based on the above inputs, the passenger train schedules will be updated and any conflicting freight train service can be identified. For understanding which train service needs to be updated the train no and the train date will be the unique combination. Freight train schedules needs to be adjusted based on the passenger schedules received.
+  version: 1.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/jainendrakumar/nonFreightTrainmanagement/1.0.0
+  - url: https://localhost:8080
+tags:
+  - name: NonFreightTrainmanagementResponse
+    description: Rescheduled non Freight Train.
+paths:
+  /cris/dev/in/api/NonFreightTrainmanagementResponse:
+    post:
+      tags:
+        - NonFreightTrainmanagementResponse
+      summary: Rescheduled non Freight Train data
+      description: Rescheduled non Freight Train data
+      operationId: NonFreightTrainmanagementResponse
+      requestBody:
+        description: Rescheduled non Freight Train data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/nonFreightTrainManagement'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/nonFreightTrainManagementResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/nonFreightTrainManagementResponse'
+components:
+  schemas:
+    NonFreightTrainmanagementResponse:
+      type: object
+      properties:
+        trainNo:
+          type: string
+          description: Train Number. 5/6 digit train number. If this field is blank, it means that the train is not scheduled yet. It is string as the train number is followed by '0's. Sample data should be following 12981,02951, P12345,A00123...
+          example: "02951"
+          minLength: 1
+        startDate:
+          type: string
+          description: Train start Date. The format should be as follows (dd-MMM-yyyy). Sample 18-Jun-2024, 10-Jul-2024
+          example: "10-Jul-2024"
+          pattern: '\d{2}-[A-Za-z]{3}-\d{4}'
+          minLength: 1
+        source:
+          type: string
+          example: "NMZ"
+          description: Source station of the train. Sample data ..NZM,DLI
+          minLength: 1
+        STD:
+          type: string
+          description: Train source Scheduled time of departure. Sample 13-Jun-2024 ..
+          example: "13-Jun-2024  13:00"
+          pattern: '\d{2}-[A-Za-z]{3}-\d{4} \d{2}:\d{2}'
+          minLength: 1
+        destination:
+          type: string
+          description: Destination of the train
+          example: "ASR"
+          minLength: 1
+        STA:
+          type: string
+          example: 13-Jun-2024 15:01
+          description: Scheduled arrival at the destination. The date is in formation 13-Jun-2024 15:01.
+          pattern: '\d{2}-[A-Za-z]{3}-\d{4} \d{2}:\d{2}'
+          minLength: 1
+        exceptionType:
+          type: string
+          example: "Reschedule"
+          description: Exception Type. If the exception type value is 'Reschedule' then it means that the train has been Reschedule for the date mentioned, if the exception type value is 'RescheduleUndo' then it means that the Reschedule is reverted. 
+          minLength: 1
+        RSTD:
+          type: string
+          description: Train source Rescheduled time of departure. Sample data can be 13-Jun-2024 14:30
+          example: "13-Jun-2024 14:30"
+          pattern: '\d{2}-[A-Za-z]{3}-\d{4} \d{2}:\d{2}'
+        rescheduledMinutes:
+          type: integer
+          example: 60
+          description: Scheduled Minutes (in minutes). For example 60, 40, 120 ...
+      required:
+        - trainNo
+        - startDate
+        - source
+        - STD
+        - destination
+        - STA
+        - exceptionType
+    nonFreightTrainmanagementResponse:
+      type: object
+      properties:
+        IsSuccess:
+          type: boolean
+        Message:
+          type: string

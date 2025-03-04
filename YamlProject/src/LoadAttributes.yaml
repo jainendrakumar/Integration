@@ -1,0 +1,194 @@
+openapi: 3.0.3
+info:
+  title: Load Attribute data Import
+  description: REST API to import Load attribute data.
+  version: 1.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/jainendrakumar/LoadAttributes/1.0.0
+  - url: https://localhost:8080
+tags:
+  - name: LoadAttributes
+    description: Load attribute.
+paths:
+  /cris/dev/in/api/loadattribute:
+    post:
+      tags:
+        - LoadAttributes
+      summary: Load attribute data
+      description: Load attribute data
+      operationId: loadattributes
+      requestBody:
+        description: Load Attribute data for Validation
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoadAttributes'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoadAttributesResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoadAttributesResponse'
+components:
+  schemas:
+    LoadAttributes:
+      type: object
+      required:
+        - LoadAttribute
+      properties:
+        LoadAttribute:
+          type: array
+          items:
+            $ref: '#/components/schemas/LoadAttribute'
+    LoadAttribute:
+      type: object
+      properties:
+        LOADID:
+          type: string
+          example: "DDU DHN 22022024163013"
+          description: Load ID
+          minLength: 1
+          pattern: '.*[^ ].*'
+        LOADNAME:
+          type: string
+          example: "BLACKSTAR-15"
+          description: Load Name.
+        LOADTYPE:
+          type: string
+          example: "BOXN"
+          description: Load Type.
+        LOADSTTS:
+          type: string
+          example: "AD"
+          description: Load Station.
+        STTSTIME:
+          type: string
+          example: "5/20/2023 9:10"
+          description: Station Time.
+          minLength: 1
+          pattern: '([0-9]+)\/([0-9]+)\/([0-9]{4})\s+([0-9]+):([:0-9]+)'
+        LOADCCINFO:
+          type: string
+          example: ""
+          description: Load CC Info.
+        STTNFROM:
+          type: string
+          example: "DDU"
+          description: Station From.
+        STTNTO:
+          type: string
+          example: "DDU"
+          description: Station To.
+        RAVSTTN:
+          type: string
+          example: "DDU"
+          description: Rav Station.
+        DIVISION:
+          type: string
+          example: "DDU"
+          description: Division.
+        ZONE:
+          type: string
+          example: "EC"
+          description: Zone.
+        LOADEDOREMPTY:
+          type: string
+          example: "L"
+          description: Loaded or empty.
+        GRUPRAKECMDT:
+          type: string
+          example: "CLKR"
+          description: GRUPRAKECMDT.
+        ERRFLAG:
+          type: string
+          example: ""
+          description: Error Flag.
+        VIADESC:
+          type: string
+          example: ""
+          description: VIA Description.
+        DFCCTRANID:
+          type: string
+          example: ""
+          description: DFCC TRAN ID
+        ENHCROUT:
+          type: string
+        ENHCROUTFLAG:
+          type: string
+        CANCELLATIONFLAG:
+          type: string
+          minLength: 1
+          maxLength: 1
+        CANCELATIONTIME:
+          type: string
+          example: "5/20/2023 9:10"
+          description: Cancellation Time.
+          minLength: 1
+          pattern: '([0-9]+)\/([0-9]+)\/([0-9]{4})\s+([0-9]+):([:0-9]+)'
+        INWARDDRTN:
+          type: string
+        OUTWARDDRTN:
+          type: string
+        EXPDREDYTIME:
+          type: string
+          example: "5/20/2023 9:10"
+          description: EXPDREDY Time.
+          minLength: 1
+          pattern: '([0-9]+)\/([0-9]+)\/([0-9]{4})\s+([0-9]+):([:0-9]+)'
+        TOTALUNITS:
+          type: number
+        BRAKEVANUNITS:
+          type: number
+        DMMYUNTS:
+          type: number
+        CCHGUNTS:
+          type: number
+        EXAMTYPE:
+          type: string
+        BPCNUMB:
+          type: string
+        RAKEID:
+          type: string
+        RAKETYPE:
+          type: string
+        LEADLOCONUMB:
+          type: number
+        LOCOTYPE:
+          type: string
+        LOCOCONT:
+          type: number
+        COAID:
+          type: string
+        LONGHAULID:
+          type: string
+        PRTYCLSS:
+          type: string
+        DEMANDID:
+          type: string
+        TRXNID:
+          type: string
+        SYSDATE:
+          type: string
+          example: "5/20/2023 9:10"
+          description: System Date.
+          minLength: 1
+          pattern: '([0-9]+)\/([0-9]+)\/([0-9]{4})\s+([0-9]+):([:0-9]+)'
+      required:
+        - LOADID
+    LoadAttributesResponse:
+      type: object
+      properties:
+        IsSuccess:
+          type: boolean
+        Message:
+          type: string

@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="ImportEmployee" targetNamespace="http://www.quintiq.com/" xmlns:tns="http://www.quintiq.com/" xmlns="http://schemas.xmlsoap.org/wsdl/">
+    <types>
+        <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.quintiq.com/">
+            <xsd:element name="ImportEmployee">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="Header">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element type="xsd:string" name="TimeStamp"/>
+                                    <xsd:element type="xsd:string" name="InterfaceID"/>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:element name="Employees">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element name="Employee" maxOccurs="unbounded">
+                                        <xsd:complexType>
+                                            <xsd:sequence>
+                                                <xsd:element type="xsd:string" name="ID"/>
+                                                <xsd:element type="xsd:string" name="FirstName"/>
+                                                <xsd:element type="xsd:string" name="MiddleName"/>
+                                                <xsd:element type="xsd:string" name="LastName"/>
+                                                <xsd:element type="xsd:string" name="Initials"/>
+                                                <xsd:element type="xsd:string" name="Gender"/>
+                                                <xsd:element type="xsd:string" name="HireDate"/>
+                                                <xsd:element type="xsd:string" name="SeniorityDate"/>
+                                                <xsd:element type="xsd:string" name="SeniorityRank"/>
+                                                <xsd:element type="xsd:string" name="Phone1"/>
+                                                <xsd:element type="xsd:string" name="Phone2"/>
+                                                <xsd:element type="xsd:string" name="Street"/>
+                                                <xsd:element type="xsd:string" name="HouseNumber"/>
+                                                <xsd:element type="xsd:string" name="District"/>
+                                                <xsd:element type="xsd:string" name="City"/>
+                                                <xsd:element type="xsd:string" name="State"/>
+                                                <xsd:element type="xsd:string" name="PostCode"/>
+                                                <xsd:element type="xsd:string" name="CountryCode"/>
+                                                <xsd:element type="xsd:string" name="Email1"/>
+                                                <xsd:element type="xsd:string" name="Email2"/>
+                                                <xsd:element type="xsd:string" name="DateOfBirth"/>
+                                                <xsd:element type="xsd:string" name="ResignationDate"/>
+                                                <xsd:element type="xsd:string" name="Status"/>
+                                                <xsd:element name="EmployeeSkills">
+                                                    <xsd:complexType>
+                                                        <xsd:sequence>
+                                                            <xsd:element name="EmployeeSkill" maxOccurs="unbounded">
+                                                                <xsd:complexType>
+                                                                    <xsd:sequence>
+                                                                        <xsd:element type="xsd:string" name="ID"/>
+                                                                        <xsd:element type="xsd:string" name="SkillID"/>
+                                                                        <xsd:element type="xsd:string" name="SkillStatus"/>
+                                                                        <xsd:element type="xsd:string" name="StartDate"/>
+                                                                        <xsd:element type="xsd:string" name="EndDate"/>
+                                                                        <xsd:element type="xsd:string" name="Status"/>
+                                                                    </xsd:sequence>
+                                                                </xsd:complexType>
+                                                            </xsd:element>
+                                                        </xsd:sequence>
+                                                    </xsd:complexType>
+                                                </xsd:element>
+                                                <xsd:element name="LeaveBalances">
+                                                    <xsd:complexType>
+                                                        <xsd:sequence>
+                                                            <xsd:element name="LeaveBalance" maxOccurs="unbounded">
+                                                                <xsd:complexType>
+                                                                    <xsd:sequence>
+                                                                        <xsd:element type="xsd:string" name="ID"/>
+                                                                        <xsd:element type="xsd:string" name="LeaveTypeID"/>
+                                                                        <xsd:element type="xsd:string" name="Date"/>
+                                                                        <xsd:element type="xsd:string" name="Balance"/>
+                                                                        <xsd:element type="xsd:string" name="BalanceStart"/>
+                                                                        <xsd:element type="xsd:string" name="Status"/>
+                                                                    </xsd:sequence>
+                                                                </xsd:complexType>
+                                                            </xsd:element>
+                                                        </xsd:sequence>
+                                                    </xsd:complexType>
+                                                </xsd:element>
+                                                <xsd:element name="EmployeeWorkingUnits">
+                                                    <xsd:complexType>
+                                                        <xsd:sequence>
+                                                            <xsd:element name="EmployeeWorkingUnit" maxOccurs="unbounded">
+                                                                <xsd:complexType>
+                                                                    <xsd:sequence>
+                                                                        <xsd:element type="xsd:string" name="ID"/>
+                                                                        <xsd:element type="xsd:string" name="StartDate"/>
+                                                                        <xsd:element type="xsd:string" name="EndDate"/>
+                                                                        <xsd:element type="xsd:string" name="WorkingUnitID"/>
+                                                                        <xsd:element type="xsd:string" name="ContractHoursPerWeek"/>
+                                                                        <xsd:element type="xsd:string" name="Status"/>
+                                                                    </xsd:sequence>
+                                                                </xsd:complexType>
+                                                            </xsd:element>
+                                                        </xsd:sequence>
+                                                    </xsd:complexType>
+                                                </xsd:element>
+                                                <xsd:element name="EmployeeLimitationPeriods">
+                                                    <xsd:complexType>
+                                                        <xsd:sequence>
+                                                            <xsd:element name="EmployeeLimitationPeriod" maxOccurs="unbounded">
+                                                                <xsd:complexType>
+                                                                    <xsd:sequence>
+                                                                        <xsd:element type="xsd:string" name="ID"/>
+                                                                        <xsd:element type="xsd:string" name="LimitationTypeID"/>
+                                                                        <xsd:element type="xsd:string" name="StartDate"/>
+                                                                        <xsd:element type="xsd:string" name="EndDate"/>
+                                                                        <xsd:element type="xsd:string" name="Status"/>
+                                                                    </xsd:sequence>
+                                                                </xsd:complexType>
+                                                            </xsd:element>
+                                                        </xsd:sequence>
+                                                    </xsd:complexType>
+                                                </xsd:element>
+                                            </xsd:sequence>
+                                        </xsd:complexType>
+                                    </xsd:element>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="Response">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="MessageID" type="xsd:string"/>
+                        <xsd:element name="Status" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="Error">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="Error" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:schema>
+    </types>
+    <message name="Request">
+        <part name="parameters" element="tns:ImportEmployee"/>
+    </message>
+    <message name="Response">
+        <part name="parameters" element="tns:Response"/>
+    </message>
+    <message name="Error">
+        <part name="parameters" element="tns:Error"/>
+    </message>
+    <portType name="PortType">
+        <operation name="ImportEmployee">
+            <input name="Request" message="tns:Request"/>
+            <output name="Response" message="tns:Response"/>
+            <fault name="Error" message="tns:Error"/>
+        </operation>
+    </portType>
+    <binding name="Binding" type="tns:PortType" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="ImportEmployee">
+            <soap:operation soapAction="Quintiq/importemployee"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+            <fault name="Error">
+                <soap:fault name="Error" use="literal"/>
+            </fault>
+        </operation>
+    </binding>
+    <service name="Employee">
+        <port name="Port" binding="tns:Binding" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+            <soap:address location="http://localhost:8081/ImportEmployee"/>
+        </port>
+    </service>
+</definitions>

@@ -1,0 +1,78 @@
+openapi: 3.0.3
+info:
+  title: Temporary Speed Restrictions Consist Type Import
+  description: REST API to import Temporary Speed Restrictions Consist Type data.
+  version: 1.0.0
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking Temporary Speed Restrictions Consist Type
+    url: https://virtserver.swaggerhub.com/jainendrakumar/TemporarySpeedRestrictionConsistTypes/1.0.0
+  - description: SwaggerHub API Auto Mocking
+    url: https://localhost:8080
+tags:
+  - name: TemporarySpeedRestrictionConsistType
+    description: Temporary Speed Restriction Consist Type validation.
+paths:
+  /cris/dev/in/api/temporaryspeedrestrictionconsisttype:
+    post:
+      tags:
+        - TemporarySpeedRestrictionConsistType
+      summary: Temporary Speed Restrictions Consist Type
+      description: Temporary Speed Restrictions Consist Type
+      operationId: temporaryspeedrestrictionconsisttype
+      requestBody:
+        description: Temporary Speed Restriction Consist Type data Validation
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TemporarySpeedRestrictionConsistTypes'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemporarySpeedRestrictionConsistTypeResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemporarySpeedRestrictionConsistTypeResponse'
+components:
+  schemas:
+    TemporarySpeedRestrictionConsistTypes:
+      type: object
+      required:
+        - TemporarySpeedRestrictionConsistType
+      properties:
+        TemporarySpeedRestrictionConsistType:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemporarySpeedRestrictionConsistType'
+    TemporarySpeedRestrictionConsistType:
+      type: object
+      properties:
+        TSRNumber:
+          type: string
+          example: "PRYJ1220196"
+          description: Caution Order Number. The unique identifier of the TSR.
+          minLength: 1
+          pattern: '.*[^ ].*'
+        ConsistType:
+          type: string
+          example: ""
+          description: ALLA
+          minLength: 1
+          pattern: '.*[^ ].*'
+      required:
+        - TSRNumber
+        - ConsistType
+    TemporarySpeedRestrictionConsistTypeResponse:
+      type: object
+      properties:
+        IsSuccess:
+          type: boolean
+        Message:
+          type: string

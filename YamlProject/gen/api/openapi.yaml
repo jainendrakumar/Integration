@@ -1,0 +1,79 @@
+openapi: 3.0.3
+info:
+  description: REST API to import Crew Availability data.
+  title: Crew Availability Import
+  version: 1.0.0
+servers:
+- url: https://localhost:8080
+tags:
+- description: Crew Availability validation.
+  name: CrewAvailability
+paths:
+  /cris/dev/in/api/crewavailability:
+    post:
+      description: Crew Availability Validation for data from Crew Management System
+        from Designated crew lobbies
+      operationId: crewvalidation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrewAvailability'
+        description: Crew Availability data for Validation
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CrewAvailabilityResponse'
+          description: Successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CrewAvailabilityBadRequest'
+          description: Bad request
+      summary: Crew Availability Validation
+      tags:
+      - CrewAvailability
+      x-contentType: application/json
+      x-accepts: application/json
+components:
+  schemas:
+    CrewAvailabilities:
+      properties:
+        Equipment:
+          items:
+            $ref: '#/components/schemas/CrewAvailability'
+          type: array
+      type: object
+    ErrorMessage:
+      properties:
+        Key:
+          type: string
+        Message:
+          type: string
+      type: object
+    Response:
+      properties:
+        IsSuccess:
+          type: boolean
+        Message:
+          type: string
+        Errors:
+          items:
+            $ref: '#/components/schemas/CrewAvailabilityErrorMessage'
+          type: array
+      type: object
+    BadRequest:
+      properties:
+        Message:
+          enum:
+          - 'Please check if all required fields are populated and contain data in
+            correct format. Required fields are: {ID, Name, OrgDesig, OffDesig, SignOffTime,
+            AvailableTime, AvailableSttn, RestHrs, Cadre, Traction, HQorOS, CRorUR,
+            CrewType}'
+          type: string
+      type: object
+

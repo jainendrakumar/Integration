@@ -1,0 +1,75 @@
+openapi: 3.0.3
+info:
+  title: Maintenance Block Resource Import
+  description: REST API to import Maintenance Block Resource data.
+  version: 1.0.0
+servers:
+  - description: SwaggerHub API Auto Mocking for Maintenance Block Resource
+    url: https://virtserver.swaggerhub.com/jainendrakumar/MaintenanceBlockResource/1.0.0
+  - url: https://localhost:8080
+tags:
+  - name: MaintenanceBlockResource
+    description: Maintenance Block validation.
+paths:
+  /cris/dev/in/api/maintenanceblockresource:
+    post:
+      tags:
+        - MaintenanceBlockResource
+      summary: Maintenance Block Resource Validation
+      description: When we get the requested time for the maintenance blocks, the same can be amended by the user or the optimizer in order to optimize the process and move the maintenance to a more feasible slot. However, in cases where the controller needs a certain maintenance block to happen only at the scheduled time and do not want it to be replanned by the optimizer then they can mark the maintenance block as frozen or locked.
+      operationId: maintenanceblockresource
+      requestBody:
+        description: Maintenance Block Resource data for Validation
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MaintenanceBlockResources"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MaintenanceBlockResourceResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MaintenanceBlockResourceResponse"
+components:
+  schemas:
+    MaintenanceBlockResources:
+      type: object
+      required:
+        - MaintenanceBlockResource
+      properties:
+        MaintenanceBlockResource:
+          type: array
+          items:
+            $ref: "#/components/schemas/MaintenanceBlockResource"
+    MaintenanceBlockResource:
+      type: object
+      properties:
+        PosessionID:
+          type: string
+          example: PRYJ12201435
+          description: Block Restriction ID
+          minLength: 1
+          pattern: .*[^ ].*
+        LinkID:
+          type: string
+          example:
+          description: The affected link in the possession.
+          minLength: 1
+          pattern: .*[^ ].*
+      required:
+        - ID
+    MaintenanceBlockResourceResponse:
+      type: object
+      properties:
+        IsSuccess:
+          type: boolean
+        Message:
+          type: string

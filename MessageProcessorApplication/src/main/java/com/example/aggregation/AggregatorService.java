@@ -2,6 +2,7 @@ package com.example.aggregation;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.Counter;
@@ -165,10 +166,9 @@ public class AggregatorService {
      */
     private void flushBucket(String loadId, MessageBucket bucket) {
         long start = System.nanoTime();
+        // Build consolidated payload (flatten nested arrays)
         ObjectNode aggregated = objectMapper.createObjectNode();
-        // Flatten arrays so that we don't end up with nested arrays.
-        // This produces a single "LoadPipeline" array.
-        var messagesArray = objectMapper.createArrayNode();
+        ArrayNode messagesArray = objectMapper.createArrayNode();
         for (JsonNode node : bucket.getMessages()) {
             if (node.isArray()) {
                 node.forEach(messagesArray::add);
@@ -179,26 +179,36 @@ public class AggregatorService {
         aggregated.set("LoadPipeline", messagesArray);
         String aggregatedStr = aggregated.toString();
 
+        // Archive merged message if archiving is enabled.
         if (archivingEnabled) {
             archiveExecutor.submit(() -> archiveMessage(aggregatedStr, "merged"));
         }
-        // Record outgoing metrics.
-        processedCounter.increment();
-        // Send merged message with custom headers.
+
+        // Send the merged payload with custom headers.
         HttpHeaders headers = new HttpHeaders();
         headers.set("Accept-Encoding", "gzip,deflate");
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> requestEntity = new HttpEntity<>(aggregatedStr, headers);
+
         try {
-            restTemplate.exchange(targetRestUrl, HttpMethod.POST, requestEntity, String.class);
+            ResponseEntity<String> response = restTemplate.exchange(
+                    targetRestUrl,
+                    HttpMethod.POST,
+                    requestEntity,
+                    String.class
+            );
+            // Increment the processed counter only after a successful response.
+            processedCounter.increment();
         } catch (Exception ex) {
             errorCounter.increment();
             ex.printStackTrace();
         }
+
         // Record processing latency.
         processingTimer.record(System.nanoTime() - start, TimeUnit.NANOSECONDS);
         buckets.remove(loadId);
     }
+
 
     /**
      * Archives a message into a dynamic folder structure:

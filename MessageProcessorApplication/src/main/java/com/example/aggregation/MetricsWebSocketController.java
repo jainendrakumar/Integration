@@ -44,5 +44,6 @@ public class MetricsWebSocketController {
         );
         // Send metrics to the /topic/metrics destination.
         messagingTemplate.convertAndSend("/topic/metrics", metricsData);
+        System.out.println("Pushing metrics update: " + metricsData);
     }
 }

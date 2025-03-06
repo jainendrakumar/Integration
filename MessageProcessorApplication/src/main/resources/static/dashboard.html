@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Message Processing Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        canvas { margin-bottom: 30px; }
+    </style>
+</head>
+<body>
+<h1>Real-Time Message Processing Dashboard</h1>
+<div>
+    <canvas id="throughputChart" width="800" height="300"></canvas>
+</div>
+<div>
+    <canvas id="latencyChart" width="800" height="300"></canvas>
+</div>
+<div>
+    <canvas id="errorChart" width="800" height="300"></canvas>
+</div>
+<div>
+    <canvas id="queueChart" width="800" height="300"></canvas>
+</div>
+
+<script>
+    // Connect to the WebSocket endpoint.
+    var socket = new SockJS('/dashboard-websocket');
+    var stompClient = Stomp.over(socket);
+    stompClient.connect({}, function(frame) {
+        console.log('Connected: ' + frame);
+        stompClient.subscribe('/topic/metrics', function(message) {
+            var metrics = JSON.parse(message.body);
+            updateCharts(metrics);
+        });
+    });
+
+    // Set up Chart.js charts.
+    var throughputCtx = document.getElementById('throughputChart').getContext('2d');
+    var throughputChart = new Chart(throughputCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Arrival Rate',
+                data: [],
+                borderColor: 'blue',
+                fill: false
+            }, {
+                label: 'Processed Rate',
+                data: [],
+                borderColor: 'green',
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            animation: false
+        }
+    });
+
+    var latencyCtx = document.getElementById('latencyChart').getContext('2d');
+    var latencyChart = new Chart(latencyCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Processing Latency (ms)',
+                data: [],
+                borderColor: 'red',
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            animation: false
+        }
+    });
+
+    var errorCtx = document.getElementById('errorChart').getContext('2d');
+    var errorChart = new Chart(errorCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Error Count',
+                data: [],
+                borderColor: 'orange',
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            animation: false
+        }
+    });
+
+    var queueCtx = document.getElementById('queueChart').getContext('2d');
+    var queueChart = new Chart(queueCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Queue Depth',
+                data: [],
+                borderColor: 'purple',
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            animation: false
+        }
+    });
+
+    // Update charts with new metrics.
+    function updateCharts(metrics) {
+        var now = new Date().toLocaleTimeString();
+
+        // Update throughput chart.
+        throughputChart.data.labels.push(now);
+        throughputChart.data.datasets[0].data.push(metrics.arrivalRate);
+        throughputChart.data.datasets[1].data.push(metrics.processedRate);
+        if (throughputChart.data.labels.length > 20) {
+            throughputChart.data.labels.shift();
+            throughputChart.data.datasets.forEach(ds => ds.data.shift());
+        }
+        throughputChart.update();
+
+        // Update latency chart.
+        latencyChart.data.labels.push(now);
+        latencyChart.data.datasets[0].data.push(metrics.processingLatency);
+        if (latencyChart.data.labels.length > 20) {
+            latencyChart.data.labels.shift();
+            latencyChart.data.datasets[0].data.shift();
+        }
+        latencyChart.update();
+
+        // Update error chart.
+        errorChart.data.labels.push(now);
+        errorChart.data.datasets[0].data.push(metrics.errorCount);
+        if (errorChart.data.labels.length > 20) {
+            errorChart.data.labels.shift();
+            errorChart.data.datasets[0].data.shift();
+        }
+        errorChart.update();
+
+        // Update queue chart.
+        queueChart.data.labels.push(now);
+        queueChart.data.datasets[0].data.push(metrics.queueDepth);
+        if (queueChart.data.labels.length > 20) {
+            queueChart.data.labels.shift();
+            queueChart.data.datasets[0].data.shift();
+        }
+        queueChart.update();
+    }
+</script>
+</body>
+</html>

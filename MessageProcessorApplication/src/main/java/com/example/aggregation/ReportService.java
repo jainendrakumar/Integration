@@ -14,25 +14,20 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * ReportService collects reporting metrics for incoming and outgoing messages.
- * It maintains per-minute metrics (message count, total bytes, and for incoming, combined message count)
- * and writes them to CSV files. A new CSV file is generated each day.
+ * ReportService collects per-minute metrics for incoming and outgoing messages
+ * and writes them to daily CSV files.
  *
  * @author JKR3
  */
 @Service
 public class ReportService {
 
-    // Formatter for minute-level keys (e.g., yyyyMMdd_HHmm)
     private final DateTimeFormatter minuteFormatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmm");
-    // Formatter for daily filenames (e.g., yyyyMMdd)
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
 
-    // Concurrent maps to store metrics per minute.
     private final ConcurrentMap<String, Metric> incomingMetrics = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, Metric> outgoingMetrics = new ConcurrentHashMap<>();
 
-    // Configurable directories for CSV reports.
     @Value("${report.incoming.dir:report/incoming}")
     private String reportIncomingDir;
 
@@ -40,13 +35,7 @@ public class ReportService {
     private String reportOutgoingDir;
 
     /**
-     * Records an incoming message.
-     * Each call increments:
-     * - Count (number of incoming events)
-     * - Total bytes (size in bytes)
-     * - Combined count (number of messages that have been combined; here each call is one unit)
-     *
-     * @param message the incoming JSON message.
+     * Records an incoming message metric.
      */
     public void recordIncoming(String message) {
         int bytes = message.getBytes(StandardCharsets.UTF_8).length;
@@ -58,15 +47,11 @@ public class ReportService {
             metric.increment(1, bytes, 1);
             return metric;
         });
+        System.out.println("Recorded incoming message for minute: " + minuteKey);
     }
 
     /**
-     * Records an outgoing (merged) message.
-     * Each call increments:
-     * - Count (number of outgoing events)
-     * - Total bytes (size in bytes)
-     *
-     * @param message the outgoing JSON message.
+     * Records an outgoing message metric.
      */
     public void recordOutgoing(String message) {
         int bytes = message.getBytes(StandardCharsets.UTF_8).length;
@@ -78,40 +63,39 @@ public class ReportService {
             metric.increment(1, bytes, 0);
             return metric;
         });
+        System.out.println("Recorded outgoing message for minute: " + minuteKey);
     }
 
     /**
-     * Scheduled task that runs at the top of every minute.
-     * It flushes metrics for the previous minute to CSV files.
+     * Scheduled task that flushes metrics for the previous minute to CSV files.
      */
     @Scheduled(cron = "0 * * * * *")
     public void flushReports() {
-        // Determine the previous minute.
-        LocalDateTime previousMinuteTime = LocalDateTime.now().minusMinutes(1);
+        System.out.println("Flushing reports for the previous minute...");
+        LocalDateTime previousMinuteTime = LocalDateTime.now().minusMinutes(2);
         String minuteKey = previousMinuteTime.format(minuteFormatter);
         String dayKey = previousMinuteTime.format(dateFormatter);
+        System.out.println("Flushing reports for minute: " + minuteKey);
 
-        // Flush incoming metrics.
         Metric inMetric = incomingMetrics.remove(minuteKey);
         if (inMetric != null) {
             writeCsvLine(reportIncomingDir, "incoming_report_" + dayKey + ".csv", minuteKey, inMetric, true);
+            System.out.println("Wrote incoming report for " + minuteKey);
+        } else {
+            System.out.println("No incoming metrics for " + minuteKey);
         }
 
-        // Flush outgoing metrics.
         Metric outMetric = outgoingMetrics.remove(minuteKey);
         if (outMetric != null) {
             writeCsvLine(reportOutgoingDir, "outgoing_report_" + dayKey + ".csv", minuteKey, outMetric, false);
+            System.out.println("Wrote outgoing report for " + minuteKey);
+        } else {
+            System.out.println("No outgoing metrics for " + minuteKey);
         }
     }
 
     /**
-     * Writes a line to a CSV file.
-     *
-     * @param dir the report directory.
-     * @param fileName the name of the CSV file (includes the date).
-     * @param minuteKey the minute key (yyyyMMdd_HHmm).
-     * @param metric the metric data.
-     * @param isIncoming true if writing the incoming report (includes combined count).
+     * Writes a CSV line to the specified file.
      */
     private void writeCsvLine(String dir, String fileName, String minuteKey, Metric metric, boolean isIncoming) {
         try {
@@ -121,10 +105,8 @@ public class ReportService {
             }
             Path filePath = dirPath.resolve(fileName);
             boolean fileExists = Files.exists(filePath);
-            try (BufferedWriter writer = Files.newBufferedWriter(filePath,
-                    StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
+            try (BufferedWriter writer = Files.newBufferedWriter(filePath, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
                 if (!fileExists) {
-                    // Write CSV header.
                     if (isIncoming) {
                         writer.write("Minute,MessageCount,TotalBytes,CombinedCount");
                     } else {
@@ -145,21 +127,13 @@ public class ReportService {
     }
 
     /**
-     * Metric class holds the per-minute counts and total bytes.
+     * Simple Metric class.
      */
     public static class Metric {
         private long count;
         private long totalBytes;
-        // For incoming messages, tracks the number of messages combined.
         private long combinedCount;
 
-        /**
-         * Increments the metrics.
-         *
-         * @param cnt the count increment.
-         * @param bytes the bytes increment.
-         * @param combined the combined count increment.
-         */
         public synchronized void increment(long cnt, long bytes, long combined) {
             this.count += cnt;
             this.totalBytes += bytes;

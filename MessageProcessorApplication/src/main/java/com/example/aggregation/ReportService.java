@@ -47,7 +47,7 @@ public class ReportService {
             metric.increment(1, bytes, 1);
             return metric;
         });
-        System.out.println("Recorded incoming message for minute: " + minuteKey);
+        System.out.println("Recorded incoming message for key: " + minuteKey);
     }
 
     /**
@@ -71,26 +71,43 @@ public class ReportService {
      */
     @Scheduled(cron = "0 * * * * *")
     public void flushReports() {
-        System.out.println("Flushing reports for the previous minute...");
-        LocalDateTime previousMinuteTime = LocalDateTime.now().minusMinutes(2);
-        String minuteKey = previousMinuteTime.format(minuteFormatter);
-        String dayKey = previousMinuteTime.format(dateFormatter);
-        System.out.println("Flushing reports for minute: " + minuteKey);
+        LocalDateTime now = LocalDateTime.now();
+        // Define a threshold: flush keys older than 1 minute.
+        LocalDateTime threshold = now.minusMinutes(1);
+        System.out.println("Flushing reports. Current time: " + now + ", threshold: " + threshold);
 
-        Metric inMetric = incomingMetrics.remove(minuteKey);
-        if (inMetric != null) {
-            writeCsvLine(reportIncomingDir, "incoming_report_" + dayKey + ".csv", minuteKey, inMetric, true);
-            System.out.println("Wrote incoming report for " + minuteKey);
-        } else {
-            System.out.println("No incoming metrics for " + minuteKey);
+        // Flush incoming metrics
+        for (String key : incomingMetrics.keySet()) {
+            try {
+                LocalDateTime keyTime = LocalDateTime.parse(key, minuteFormatter);
+                if (keyTime.isBefore(threshold)) {
+                    Metric inMetric = incomingMetrics.remove(key);
+                    if (inMetric != null) {
+                        String dayKey = keyTime.format(dateFormatter);
+                        writeCsvLine(reportIncomingDir, "incoming_report_" + dayKey + ".csv", key, inMetric, true);
+                        System.out.println("Flushed incoming metrics for key: " + key);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
-        Metric outMetric = outgoingMetrics.remove(minuteKey);
-        if (outMetric != null) {
-            writeCsvLine(reportOutgoingDir, "outgoing_report_" + dayKey + ".csv", minuteKey, outMetric, false);
-            System.out.println("Wrote outgoing report for " + minuteKey);
-        } else {
-            System.out.println("No outgoing metrics for " + minuteKey);
+        // Flush outgoing metrics
+        for (String key : outgoingMetrics.keySet()) {
+            try {
+                LocalDateTime keyTime = LocalDateTime.parse(key, minuteFormatter);
+                if (keyTime.isBefore(threshold)) {
+                    Metric outMetric = outgoingMetrics.remove(key);
+                    if (outMetric != null) {
+                        String dayKey = keyTime.format(dateFormatter);
+                        writeCsvLine(reportOutgoingDir, "outgoing_report_" + dayKey + ".csv", key, outMetric, false);
+                        System.out.println("Flushed outgoing metrics for key: " + key);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 

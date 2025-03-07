@@ -6,5 +6,5 @@ com\example\aggregation\AggregatorService$MessageBucket.class
 com\example\aggregation\WebSocketConfig.class
 com\example\aggregation\MetricsWebSocketController.class
 com\example\aggregation\AggregatorService.class
+com\example\aggregation\ReportRecord.class
 com\example\aggregation\ArchiveZipper.class
-com\example\aggregation\ReportService$Metric.class

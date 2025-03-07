@@ -10,111 +10,121 @@ import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
- * ReportService collects per-minute metrics for incoming and outgoing messages
- * and writes them to daily CSV files.
+ * ReportService aggregates per-minute metrics for incoming and outgoing messages,
+ * and flushes the data to CSV files daily. It uses a ConcurrentSkipListMap to maintain
+ * a time-ordered map of ReportRecord objects.
  *
  * @author JKR3
  */
 @Service
 public class ReportService {
 
+    // Formatter for minute-level keys (e.g., "yyyyMMdd_HHmm")
     private final DateTimeFormatter minuteFormatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmm");
+    // Formatter for daily CSV file naming (e.g., "yyyyMMdd")
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
 
-    private final ConcurrentMap<String, Metric> incomingMetrics = new ConcurrentHashMap<>();
-    private final ConcurrentMap<String, Metric> outgoingMetrics = new ConcurrentHashMap<>();
+    // Use a ConcurrentSkipListMap for time-ordered keys.
+    private final ConcurrentSkipListMap<String, ReportRecord> incomingRecords = new ConcurrentSkipListMap<>();
+    private final ConcurrentSkipListMap<String, ReportRecord> outgoingRecords = new ConcurrentSkipListMap<>();
 
+    // Report directories for incoming and outgoing CSV reports; configurable via properties.
     @Value("${report.incoming.dir:report/incoming}")
     private String reportIncomingDir;
 
     @Value("${report.outgoing.dir:report/outgoing}")
     private String reportOutgoingDir;
 
+    // Flush threshold in minutes (e.g., flush any record older than 1 minute).
+    @Value("${report.flush.threshold.minutes:1}")
+    private long flushThresholdMinutes;
+
     /**
-     * Records an incoming message metric.
+     * Records an incoming message metric by updating the ReportRecord for the current minute.
+     *
+     * @param message the incoming message as a String.
      */
     public void recordIncoming(String message) {
         int bytes = message.getBytes(StandardCharsets.UTF_8).length;
         String minuteKey = LocalDateTime.now().format(minuteFormatter);
-        incomingMetrics.compute(minuteKey, (key, metric) -> {
-            if (metric == null) {
-                metric = new Metric();
-            }
-            metric.increment(1, bytes, 1);
-            return metric;
-        });
-        System.out.println("Recorded incoming message for key: " + minuteKey);
+        incomingRecords.computeIfAbsent(minuteKey, ReportRecord::new)
+                .add(1, bytes, 1);
+        System.out.println("Recorded incoming metric for key: " + minuteKey);
     }
 
     /**
-     * Records an outgoing message metric.
+     * Records an outgoing message metric by updating the ReportRecord for the current minute.
+     *
+     * @param message the outgoing message as a String.
      */
     public void recordOutgoing(String message) {
         int bytes = message.getBytes(StandardCharsets.UTF_8).length;
         String minuteKey = LocalDateTime.now().format(minuteFormatter);
-        outgoingMetrics.compute(minuteKey, (key, metric) -> {
-            if (metric == null) {
-                metric = new Metric();
-            }
-            metric.increment(1, bytes, 0);
-            return metric;
-        });
-        System.out.println("Recorded outgoing message for minute: " + minuteKey);
+        outgoingRecords.computeIfAbsent(minuteKey, ReportRecord::new)
+                .add(1, bytes, 0);
+        System.out.println("Recorded outgoing metric for key: " + minuteKey);
     }
 
     /**
-     * Scheduled task that flushes metrics for the previous minute to CSV files.
+     * Scheduled task that flushes all ReportRecords older than the threshold to CSV files.
+     * This method runs at the top of every minute.
      */
     @Scheduled(cron = "0 * * * * *")
     public void flushReports() {
         LocalDateTime now = LocalDateTime.now();
-        // Define a threshold: flush keys older than 1 minute.
-        LocalDateTime threshold = now.minusMinutes(1);
+        LocalDateTime threshold = now.minusMinutes(flushThresholdMinutes);
         System.out.println("Flushing reports. Current time: " + now + ", threshold: " + threshold);
 
-        // Flush incoming metrics
-        for (String key : incomingMetrics.keySet()) {
-            try {
-                LocalDateTime keyTime = LocalDateTime.parse(key, minuteFormatter);
-                if (keyTime.isBefore(threshold)) {
-                    Metric inMetric = incomingMetrics.remove(key);
-                    if (inMetric != null) {
-                        String dayKey = keyTime.format(dateFormatter);
-                        writeCsvLine(reportIncomingDir, "incoming_report_" + dayKey + ".csv", key, inMetric, true);
-                        System.out.println("Flushed incoming metrics for key: " + key);
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        // Flush incoming records
+        flushRecords(incomingRecords, reportIncomingDir, true);
+        // Flush outgoing records
+        flushRecords(outgoingRecords, reportOutgoingDir, false);
+    }
 
-        // Flush outgoing metrics
-        for (String key : outgoingMetrics.keySet()) {
+    /**
+     * Iterates over the provided records map and flushes any entries whose key time is before the threshold.
+     *
+     * @param records   the map of ReportRecord objects.
+     * @param dir       the directory to write the CSV file.
+     * @param isIncoming true if processing incoming metrics (includes combined count).
+     */
+    private void flushRecords(ConcurrentSkipListMap<String, ReportRecord> records, String dir, boolean isIncoming) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime threshold = now.minusMinutes(flushThresholdMinutes);
+        // Iterate over the keys in order.
+        Iterator<Map.Entry<String, ReportRecord>> iterator = records.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, ReportRecord> entry = iterator.next();
             try {
-                LocalDateTime keyTime = LocalDateTime.parse(key, minuteFormatter);
-                if (keyTime.isBefore(threshold)) {
-                    Metric outMetric = outgoingMetrics.remove(key);
-                    if (outMetric != null) {
-                        String dayKey = keyTime.format(dateFormatter);
-                        writeCsvLine(reportOutgoingDir, "outgoing_report_" + dayKey + ".csv", key, outMetric, false);
-                        System.out.println("Flushed outgoing metrics for key: " + key);
-                    }
+                LocalDateTime recordTime = LocalDateTime.parse(entry.getKey(), minuteFormatter);
+                if (recordTime.isBefore(threshold)) {
+                    String dayKey = recordTime.format(dateFormatter);
+                    writeCsvLine(dir, (isIncoming ? "incoming_report_" : "outgoing_report_") + dayKey + ".csv", entry.getKey(), entry.getValue(), isIncoming);
+                    System.out.println("Flushed " + (isIncoming ? "incoming" : "outgoing") + " record for key: " + entry.getKey());
+                    iterator.remove();
                 }
             } catch (Exception e) {
+                System.err.println("Error processing record with key: " + entry.getKey());
                 e.printStackTrace();
             }
         }
     }
 
     /**
-     * Writes a CSV line to the specified file.
+     * Writes a single line to a CSV file. Creates the directory if it doesn't exist and writes a header if the file is new.
+     *
+     * @param dir         the report directory.
+     * @param fileName    the CSV file name.
+     * @param minuteKey   the key for the record.
+     * @param record      the ReportRecord containing metrics.
+     * @param isIncoming  true if writing incoming metrics.
      */
-    private void writeCsvLine(String dir, String fileName, String minuteKey, Metric metric, boolean isIncoming) {
+    private void writeCsvLine(String dir, String fileName, String minuteKey, ReportRecord record, boolean isIncoming) {
         try {
             Path dirPath = Paths.get(dir);
             if (!Files.exists(dirPath)) {
@@ -132,41 +142,15 @@ public class ReportService {
                     writer.newLine();
                 }
                 if (isIncoming) {
-                    writer.write(minuteKey + "," + metric.getCount() + "," + metric.getTotalBytes() + "," + metric.getCombinedCount());
+                    writer.write(minuteKey + "," + record.getMessageCount() + "," + record.getTotalBytes() + "," + record.getCombinedCount());
                 } else {
-                    writer.write(minuteKey + "," + metric.getCount() + "," + metric.getTotalBytes());
+                    writer.write(minuteKey + "," + record.getMessageCount() + "," + record.getTotalBytes());
                 }
                 writer.newLine();
             }
         } catch (Exception e) {
+            System.err.println("Error writing CSV line for key: " + minuteKey);
             e.printStackTrace();
-        }
-    }
-
-    /**
-     * Simple Metric class.
-     */
-    public static class Metric {
-        private long count;
-        private long totalBytes;
-        private long combinedCount;
-
-        public synchronized void increment(long cnt, long bytes, long combined) {
-            this.count += cnt;
-            this.totalBytes += bytes;
-            this.combinedCount += combined;
-        }
-
-        public long getCount() {
-            return count;
-        }
-
-        public long getTotalBytes() {
-            return totalBytes;
-        }
-
-        public long getCombinedCount() {
-            return combinedCount;
         }
     }
 }

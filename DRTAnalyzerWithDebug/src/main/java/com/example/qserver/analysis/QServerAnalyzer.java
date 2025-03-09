@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
  * QServerAnalyzer provides methods to perform analysis on QServerTransRecord data.
  * It supports filtering, grouping, performance metrics calculation, anomaly detection,
  * correlation analysis, and visualization.
+ *
+ * @author JKR3
  */
 public class QServerAnalyzer {
 

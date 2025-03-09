@@ -7,6 +7,8 @@ import org.apache.commons.csv.CSVRecord;
 
 /**
  * Processes and converts data from CSV records.
+ *
+ * @author JKR3
  */
 public class DataProcessor {
 

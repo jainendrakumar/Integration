@@ -6,6 +6,8 @@ import java.util.List;
 
 /**
  * Main class to execute the QServer log analysis program.
+ *
+ * @author JKR3
  */
 public class Main {
 

@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 
 /**
  * Analyzes data to identify trends, anomalies, and performance bottlenecks.
+ *
+ * @author JKR3
  */
 public class DataAnalyzer {
 

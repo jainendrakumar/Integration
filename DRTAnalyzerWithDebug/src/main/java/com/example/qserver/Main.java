@@ -13,6 +13,8 @@ import java.util.Properties;
  * Main is the entry point of the QServer Log Analyzer application.
  * It loads CSV files from a specified directory, performs analysis,
  * and displays the results including charts and summary statistics.
+ *
+ * @author JKR3
  */
 public class Main {
     public static void main(String[] args) {

@@ -22,6 +22,8 @@ import java.util.Properties;
  * CsvParser is responsible for reading multiple CSV log files from a directory,
  * parsing each file using Apache Commons CSV, and converting the raw data into
  * a list of QServerTransRecord objects.
+ *
+ * @author JKR3
  */
 public class CsvParser {
 

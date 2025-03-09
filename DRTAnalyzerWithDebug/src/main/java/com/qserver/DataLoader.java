@@ -14,6 +14,8 @@ import java.util.List;
 
 /**
  * Loads and parses CSV files from a specified directory.
+ *
+ * @author JKR3
  */
 public class DataLoader {
 

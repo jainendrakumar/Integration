@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 
 /**
  * Generates visualizations for analyzed data.
+ *
+ * @author JKR3
  */
 public class VisualizationEngine {
 

@@ -10,6 +10,8 @@ import java.util.List;
 
 /**
  * Generates detailed and interactive reports.
+ *
+ * @author JKR3
  */
 public class ReportGenerator {
 

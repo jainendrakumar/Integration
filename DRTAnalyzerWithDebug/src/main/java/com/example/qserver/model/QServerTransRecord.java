@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
  * QServerTransRecord represents a single QServer transaction log entry.
  * It encapsulates fields such as transaction ID, thread information, timestamps,
  * processing metrics, and other related details.
+ *
+ * @author JKR3
  */
 public class QServerTransRecord {
     // Identifiers

@@ -1,4 +1,15 @@
-DRTAnalyzerV2.class
+com\qserver\DataLoader.class
 DRTAnalyzer.class
 LogAnalyzer.class
+com\example\qserver\model\QServerTransRecord.class
+com\qserver\Main.class
+LogAnalyzerUtil.class
+com\example\qserver\analysis\QServerAnalyzer.class
+DRTAnalyzerV2.class
+com\qserver\ReportGenerator.class
+com\qserver\DataProcessor.class
+com\example\qserver\Main.class
+com\qserver\VisualizationEngine.class
+com\qserver\DataAnalyzer.class
+com\example\qserver\parser\CsvParser.class
 DRTAnalyzerWithDebug.class

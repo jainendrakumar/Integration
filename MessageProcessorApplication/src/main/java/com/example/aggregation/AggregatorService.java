@@ -3,47 +3,40 @@ package com.example.aggregation;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Timer;
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.Gauge;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
-
 import javax.annotation.PreDestroy;
-import java.io.File;
-import java.io.FileWriter;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.*;
 
 /**
- * AggregatorService processes incoming JSON messages:
- * - It increments Micrometer counters and timers to record:
- *      • Arrival count (messages received)
- *      • Processed count (messages processed)
- *      • Processing latency
- *      • Error count
- *      • Queue depth (via a Gauge)
- * - It also archives messages and sends merged payloads to a target REST endpoint.
+ * Updated AggregatorService with new features:
+ * 1. Outgoing message switch.
+ * 2. Throttling of merged messages.
+ * 3. Dynamic input mode (zip vs folder).
+ * 4. Dead letter queue handling.
+ * 5. Reporting to CSV.
  *
- * @author JKR3
+ * @author Jainendra Kumar(jkr3)
+ * TODO:
  */
 @Service
 public class AggregatorService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-    // Map for grouping messages by LoadID.
     private final Map<String, MessageBucket> buckets = new ConcurrentHashMap<>();
     private final Set<String> createdDirs = ConcurrentHashMap.newKeySet();
     private final ExecutorService archiveExecutor = Executors.newFixedThreadPool(4);
@@ -51,77 +44,82 @@ public class AggregatorService {
     @Value("${target.rest.url}")
     private String targetRestUrl;
 
-    // Archive roots (not used in the dashboard part, but part of full implementation)
+    // NEW: Switch to enable/disable sending outgoing messages.
+    @Value("${target.rest.enabled:true}")
+    private boolean targetRestEnabled;
+
     @Value("${archive.incoming.root}")
     private String incomingArchiveRoot;
+
     @Value("${archive.merged.root}")
     private String mergedArchiveRoot;
 
-    // Consolidation timeframe in seconds.
+    // NEW: Dead letter queue root directory.
+    @Value("${deadletterqueue}")
+    private String deadLetterQueue;
+
+    // NEW: Reporting file prefix.
+    @Value("${report.file.prefix:report_}")
+    private String reportFilePrefix;
+
     @Value("${consolidation.timeframe}")
     private long consolidationTimeFrame;
 
-    // Optional flush size threshold.
     @Value("${bucket.flush.size:0}")
     private int bucketFlushSize;
 
-    // Switch for archiving.
     @Value("${archiving.enabled:true}")
     private boolean archivingEnabled;
 
     private final RestTemplate restTemplate;
-    private final MeterRegistry meterRegistry;
 
-    // Micrometer metrics.
-    private final Counter arrivalCounter;
-    private final Counter processedCounter;
-    private final Counter errorCounter;
-    private final Timer processingTimer;
-    // Gauge for queue depth; we bind it to our buckets size.
-    private final Gauge queueDepthGauge;
+    // NEW: Throttling properties.
+    @Value("${throttling.enabled:true}")
+    private boolean throttlingEnabled;
 
-    public AggregatorService(RestTemplate restTemplate, MeterRegistry meterRegistry) {
+    @Value("${throttling.limit:5}")
+    private int throttlingLimit;
+
+    // NEW: Fields for throttle control.
+    private final Object throttleLock = new Object();
+    private long lastThrottleReset = System.currentTimeMillis();
+    private int throttleCount = 0;
+
+    // NEW: Input source mode properties.
+    @Value("${input.mode:folder}")
+    private String inputMode;
+
+    @Value("${input.zip.file:}")
+    private String inputZipFile;
+
+    @Value("${input.folder.path:input}")
+    private String inputFolderPath;
+
+    public AggregatorService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
-        this.meterRegistry = meterRegistry;
-        this.arrivalCounter = meterRegistry.counter("message.arrival.count");
-        this.processedCounter = meterRegistry.counter("message.processed.count");
-        this.errorCounter = meterRegistry.counter("message.error.count");
-        this.processingTimer = meterRegistry.timer("message.processing.latency");
-        // Gauge that reads total bucket size.
-        this.queueDepthGauge = Gauge.builder("message.queue.depth", this, AggregatorService::calculateQueueDepth)
-                .register(meterRegistry);
     }
 
-    /**
-     * Simulated processing of an incoming message.
-     * Increments the arrival counter, archives raw messages if enabled,
-     * and groups the message by LoadID.
-     *
-     * @param message the incoming JSON message string.
-     */
     public void processIncomingMessage(String message) {
-        arrivalCounter.increment();
+        // Archive raw incoming message asynchronously if archiving is enabled.
         if (archivingEnabled) {
             archiveExecutor.submit(() -> archiveMessage(message, "incoming"));
         }
+
         try {
             JsonNode root = objectMapper.readTree(message);
             JsonNode loadPipelineNode = root.get("LoadPipeline");
             if (loadPipelineNode == null || !loadPipelineNode.isArray() || loadPipelineNode.size() == 0) {
-                System.err.println("Invalid message: 'LoadPipeline' is missing or empty.");
-                errorCounter.increment();
+                System.err.println("Invalid message: 'LoadPipeline' array is missing or empty.");
                 return;
             }
-            // Extract LoadID from the first element.
             JsonNode firstElement = loadPipelineNode.get(0);
             JsonNode loadIdNode = firstElement.get("LoadID");
             if (loadIdNode == null) {
-                System.err.println("Invalid message: 'LoadID' missing.");
-                errorCounter.increment();
+                System.err.println("Invalid message: 'LoadID' is missing in the first element.");
                 return;
             }
             String loadId = loadIdNode.asText();
-            // Group the message.
+
             buckets.compute(loadId, (id, bucket) -> {
                 if (bucket == null) {
                     bucket = new MessageBucket();
@@ -134,14 +132,10 @@ public class AggregatorService {
                 return bucket;
             });
         } catch (Exception e) {
-            errorCounter.increment();
             e.printStackTrace();
         }
     }
 
-    /**
-     * Scheduled task to flush message buckets if their age exceeds the consolidation timeframe.
-     */
     @Scheduled(fixedDelay = 1000)
     public void flushBuckets() {
         long now = System.currentTimeMillis();
@@ -154,19 +148,8 @@ public class AggregatorService {
         }
     }
 
-    /**
-     * Flushes the bucket for a given LoadID:
-     * - Merges messages (flattening nested arrays)
-     * - Archives merged message if enabled
-     * - Increments processed counter and records processing latency
-     * - Sends the merged payload to the target REST service with custom HTTP headers.
-     *
-     * @param loadId the bucket key.
-     * @param bucket the MessageBucket.
-     */
     private void flushBucket(String loadId, MessageBucket bucket) {
-        long start = System.nanoTime();
-        // Build consolidated payload (flatten nested arrays)
+        // Build consolidated payload.
         ObjectNode aggregated = objectMapper.createObjectNode();
         ArrayNode messagesArray = objectMapper.createArrayNode();
         for (JsonNode node : bucket.getMessages()) {
@@ -179,44 +162,84 @@ public class AggregatorService {
         aggregated.set("LoadPipeline", messagesArray);
         String aggregatedStr = aggregated.toString();
 
-        // Archive merged message if archiving is enabled.
+        // Archive merged message asynchronously.
         if (archivingEnabled) {
             archiveExecutor.submit(() -> archiveMessage(aggregatedStr, "merged"));
         }
 
-        // Send the merged payload with custom headers.
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Accept-Encoding", "gzip,deflate");
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<String> requestEntity = new HttpEntity<>(aggregatedStr, headers);
+        // NEW: Prepare CSV report details.
+        String minuteDetail = LocalDateTime.now().format(DateTimeFormatter.ofPattern("mm"));
+        int messageCount = bucket.getMessages().size();
 
-        try {
-            ResponseEntity<String> response = restTemplate.exchange(
-                    targetRestUrl,
-                    HttpMethod.POST,
-                    requestEntity,
-                    String.class
-            );
-            // Increment the processed counter only after a successful response.
-            processedCounter.increment();
-        } catch (Exception ex) {
-            errorCounter.increment();
-            ex.printStackTrace();
+        // Check switch to send message out.
+        if (targetRestEnabled) {
+            // NEW: Apply throttling if enabled.
+            if (throttlingEnabled) {
+                throttleIfNeeded();
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Accept-Encoding", "gzip,deflate");
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<String> requestEntity = new HttpEntity<>(aggregatedStr, headers);
+
+            try {
+                ResponseEntity<String> response = restTemplate.exchange(
+                        targetRestUrl,
+                        HttpMethod.POST,
+                        requestEntity,
+                        String.class
+                );
+                // Report success.
+                writeReport(loadId, messageCount, minuteDetail, "SENT");
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                // On failure, move to dead letter queue.
+                moveToDeadLetter(aggregatedStr);
+                writeReport(loadId, messageCount, minuteDetail, "FAILED");
+            }
+        } else {
+            // If outgoing messages are disabled, skip sending.
+            writeReport(loadId, messageCount, minuteDetail, "SKIPPED");
         }
-
-        // Record processing latency.
-        processingTimer.record(System.nanoTime() - start, TimeUnit.NANOSECONDS);
         buckets.remove(loadId);
     }
 
+    // NEW: Simple throttling mechanism
+    private void throttleIfNeeded() {
+        synchronized (throttleLock) {
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastThrottleReset >= 1000) {
+                lastThrottleReset = currentTime;
+                throttleCount = 0;
+            }
+            if (throttleCount >= throttlingLimit) {
+                long sleepTime = 1000 - (currentTime - lastThrottleReset);
+                try {
+                    Thread.sleep(sleepTime);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                lastThrottleReset = System.currentTimeMillis();
+                throttleCount = 0;
+            }
+            throttleCount++;
+        }
+    }
 
-    /**
-     * Archives a message into a dynamic folder structure:
-     * <archiveRoot>/<yyyyMMdd>/<HH>/<mm>
-     *
-     * @param message the JSON message.
-     * @param type "incoming" or "merged".
-     */
+    // NEW: Move failed message to dead letter queue using the same folder hierarchy.
+    private void moveToDeadLetter(String message) {
+        try {
+            LocalDateTime now = LocalDateTime.now();
+            String folderPath = now.format(DateTimeFormatter.ofPattern("yyyyMMdd"))
+                    + File.separator + now.format(DateTimeFormatter.ofPattern("HH"))
+                    + File.separator + now.format(DateTimeFormatter.ofPattern("mm"));
+            archiveToFolder(message, deadLetterQueue, folderPath);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void archiveMessage(String message, String type) {
         try {
             LocalDateTime now = LocalDateTime.now();
@@ -230,13 +253,6 @@ public class AggregatorService {
         }
     }
 
-    /**
-     * Writes the message to a file in the specified folder.
-     *
-     * @param message the JSON message.
-     * @param rootDir the archive root.
-     * @param folderPath the dynamic folder path.
-     */
     private void archiveToFolder(String message, String rootDir, String folderPath) {
         try {
             String baseDir = rootDir + File.separator + folderPath;
@@ -253,13 +269,139 @@ public class AggregatorService {
         }
     }
 
-    /**
-     * Calculates the total number of messages pending across all buckets.
-     *
-     * @return total count of queued messages.
-     */
-    private double calculateQueueDepth() {
-        return buckets.values().stream().mapToInt(bucket -> bucket.getMessages().size()).sum();
+    // NEW: Append a report line to report_YYYYMMDD.csv
+    private void writeReport(String loadId, int count, String minute, String status) {
+        try {
+            String dateStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+            String reportFile = reportFilePrefix + dateStr + ".csv";
+            File file = new File(reportFile);
+            boolean writeHeader = !file.exists();
+            try (FileWriter fw = new FileWriter(file, true);
+                 BufferedWriter bw = new BufferedWriter(fw)) {
+                if (writeHeader) {
+                    bw.write("Minute,LoadID,EntryCount,Status");
+                    bw.newLine();
+                }
+                bw.write(String.format("%s,%s,%d,%s", minute, loadId, count, status));
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // NEW: Scheduled method to process input messages from either a zip file or folder.
+    @Scheduled(fixedDelay = 60000)
+    public void processInputMessages() {
+        if ("zip".equalsIgnoreCase(inputMode) && inputZipFile != null && !inputZipFile.isEmpty()) {
+            processZipInput();
+        } else {
+            processFolderInput();
+        }
+    }
+
+    // NEW: Process messages from a zip file.
+    private void processZipInput() {
+        // For example, unzip to a temporary directory then process files.
+        File zipFile = new File(inputZipFile);
+        if (!zipFile.exists()) {
+            System.err.println("Zip file not found: " + inputZipFile);
+            return;
+        }
+        File tempDir = new File("temp_unzip");
+        tempDir.mkdirs();
+        try (java.util.zip.ZipFile zf = new java.util.zip.ZipFile(zipFile)) {
+            Enumeration<? extends java.util.zip.ZipEntry> entries = zf.entries();
+            while (entries.hasMoreElements()) {
+                java.util.zip.ZipEntry entry = entries.nextElement();
+                File outFile = new File(tempDir, entry.getName());
+                if (entry.isDirectory()) {
+                    outFile.mkdirs();
+                } else {
+                    outFile.getParentFile().mkdirs();
+                    try (InputStream in = zf.getInputStream(entry);
+                         OutputStream out = new FileOutputStream(outFile)) {
+                        byte[] buffer = new byte[1024];
+                        int len;
+                        while ((len = in.read(buffer)) > 0) {
+                            out.write(buffer, 0, len);
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // Once unzipped, process the folder structure.
+        processMessagesFromDirectory(tempDir);
+        // Optionally, delete the temporary directory after processing.
+        deleteDirectory(tempDir);
+    }
+
+    // NEW: Process messages from a folder (inputFolderPath) following the hierarchy.
+    private void processFolderInput() {
+        File folder = new File(inputFolderPath);
+        if (!folder.exists() || !folder.isDirectory()) {
+            System.err.println("Input folder not found: " + inputFolderPath);
+            return;
+        }
+        processMessagesFromDirectory(folder);
+    }
+
+    // NEW: Traverse directories in ascending order (by day, hour, minute) and process JSON files.
+    private void processMessagesFromDirectory(File root) {
+        // List date directories (YYYYMMDD) and sort ascending.
+        File[] dateDirs = root.listFiles(File::isDirectory);
+        if (dateDirs == null) return;
+        Arrays.sort(dateDirs, Comparator.comparing(File::getName));
+        for (File dateDir : dateDirs) {
+            File[] hourDirs = dateDir.listFiles(File::isDirectory);
+            if (hourDirs == null) continue;
+            Arrays.sort(hourDirs, Comparator.comparing(File::getName));
+            for (File hourDir : hourDirs) {
+                File[] minuteDirs = hourDir.listFiles(File::isDirectory);
+                if (minuteDirs == null) continue;
+                Arrays.sort(minuteDirs, Comparator.comparing(File::getName));
+                for (File minuteDir : minuteDirs) {
+                    File[] messageFiles = minuteDir.listFiles((dir, name) -> name.endsWith(".json"));
+                    if (messageFiles == null) continue;
+                    Arrays.sort(messageFiles, Comparator.comparing(File::getName));
+                    for (File msgFile : messageFiles) {
+                        try {
+                            String content = new String(Files.readAllBytes(msgFile.toPath()));
+                            processIncomingMessage(content);
+                            // Optionally delete or archive the file after processing.
+                            // Files.delete(msgFile.toPath());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            // On error, move file to dead letter queue preserving the hierarchy.
+                            moveFileToDeadLetter(msgFile, dateDir.getName(), hourDir.getName(), minuteDir.getName());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // NEW: Utility method to move a file to the dead letter queue under the same hierarchy.
+    private void moveFileToDeadLetter(File file, String date, String hour, String minute) {
+        try {
+            String targetDir = deadLetterQueue + File.separator + date + File.separator + hour + File.separator + minute;
+            Files.createDirectories(Paths.get(targetDir));
+            Files.move(file.toPath(), Paths.get(targetDir, file.getName()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // NEW: Utility method to delete a directory recursively.
+    private void deleteDirectory(File dir) {
+        if (dir.isDirectory()) {
+            for (File sub : dir.listFiles()) {
+                deleteDirectory(sub);
+            }
+        }
+        dir.delete();
     }
 
     @PreDestroy
@@ -267,12 +409,9 @@ public class AggregatorService {
         archiveExecutor.shutdown();
     }
 
-    /**
-     * Inner class representing a message bucket.
-     */
     private static class MessageBucket {
         private final long startTime;
-        private final ConcurrentLinkedQueue<JsonNode> messages = new ConcurrentLinkedQueue<>();
+        private final Queue<JsonNode> messages = new ConcurrentLinkedQueue<>();
 
         public MessageBucket() {
             this.startTime = System.currentTimeMillis();
@@ -286,7 +425,7 @@ public class AggregatorService {
             return startTime;
         }
 
-        public ConcurrentLinkedQueue<JsonNode> getMessages() {
+        public Queue<JsonNode> getMessages() {
             return messages;
         }
     }

@@ -1,0 +1,53 @@
+2025-05-03T15:12:51.376-04:00  INFO 5459 --- [main] c.e.t.TrainServiceCrewApiApplication     : Starting TrainServiceCrewApiApplication v0.0.1-SNAPSHOT using Java 17.0.14 with PID 5459 (/home/ubuntu/train-service-crew-api/target/train-service-crew-api-0.0.1-SNAPSHOT.jar started by ubuntu in /home/ubuntu/train-service-crew-api)
+2025-05-03T15:12:51.384-04:00  INFO 5459 --- [main] c.e.t.TrainServiceCrewApiApplication     : No active profile set, falling back to 1 default profile: "default"
+2025-05-03T15:12:52.795-04:00  INFO 5459 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-05-03T15:12:52.815-04:00  INFO 5459 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-05-03T15:12:52.815-04:00  INFO 5459 --- [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.24]
+2025-05-03T15:12:52.873-04:00  INFO 5459 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-05-03T15:12:52.874-04:00  INFO 5459 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1318 ms
+2025-05-03T15:12:53.363-04:00  INFO 5459 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2025-05-03T15:12:53.381-04:00  INFO 5459 --- [main] c.e.t.TrainServiceCrewApiApplication     : Started TrainServiceCrewApiApplication in 2.787 seconds (process running for 3.537)
+2025-05-03T15:13:33.643-04:00  INFO 5459 --- [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-05-03T15:13:33.644-04:00  INFO 5459 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-05-03T15:13:33.646-04:00  INFO 5459 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2025-05-03T15:13:33.809-04:00  INFO 5459 --- [http-nio-8080-exec-1] c.e.t.service.TrainCrewServiceImpl       : Processing crew request ID: null
+2025-05-03T15:13:33.830-04:00  INFO 5459 --- [http-nio-8080-exec-1] c.e.t.service.TrainCrewServiceImpl       : Finished processing crew request ID: null
+2025-05-03T15:15:32.139-04:00  INFO 6370 --- [main] c.e.t.TrainServiceCrewApiApplication     : Starting TrainServiceCrewApiApplication v0.0.1-SNAPSHOT using Java 17.0.14 with PID 6370 (/home/ubuntu/train-service-crew-api/target/train-service-crew-api-0.0.1-SNAPSHOT.jar started by ubuntu in /home/ubuntu/train-service-crew-api)
+2025-05-03T15:15:32.146-04:00  INFO 6370 --- [main] c.e.t.TrainServiceCrewApiApplication     : No active profile set, falling back to 1 default profile: "default"
+2025-05-03T15:15:33.458-04:00  INFO 6370 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-05-03T15:15:33.478-04:00  INFO 6370 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-05-03T15:15:33.479-04:00  INFO 6370 --- [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.24]
+2025-05-03T15:15:33.542-04:00  INFO 6370 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-05-03T15:15:33.543-04:00  INFO 6370 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1245 ms
+2025-05-03T15:15:34.034-04:00  WARN 6370 --- [main] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop'
+2025-05-03T15:15:34.055-04:00  INFO 6370 --- [main] .s.b.a.l.ConditionEvaluationReportLogger : 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2025-05-03T15:15:34.076-04:00 ERROR 6370 --- [main] o.s.b.d.LoggingFailureAnalysisReporter   : 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Web server failed to start. Port 8080 was already in use.
+
+Action:
+
+Identify and stop the process that's listening on port 8080 or configure this application to listen on another port.
+
+2025-05-03T15:16:47.854-04:00  INFO 7426 --- [main] c.e.t.TrainServiceCrewApiApplication     : Starting TrainServiceCrewApiApplication v0.0.1-SNAPSHOT using Java 17.0.14 with PID 7426 (/home/ubuntu/train-service-crew-api/target/train-service-crew-api-0.0.1-SNAPSHOT.jar started by ubuntu in /home/ubuntu/train-service-crew-api)
+2025-05-03T15:16:47.866-04:00  INFO 7426 --- [main] c.e.t.TrainServiceCrewApiApplication     : No active profile set, falling back to 1 default profile: "default"
+2025-05-03T15:16:49.125-04:00  INFO 7426 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-05-03T15:16:49.141-04:00  INFO 7426 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-05-03T15:16:49.142-04:00  INFO 7426 --- [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.24]
+2025-05-03T15:16:49.191-04:00  INFO 7426 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-05-03T15:16:49.192-04:00  INFO 7426 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1184 ms
+2025-05-03T15:16:49.668-04:00  INFO 7426 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2025-05-03T15:16:49.690-04:00  INFO 7426 --- [main] c.e.t.TrainServiceCrewApiApplication     : Started TrainServiceCrewApiApplication in 2.625 seconds (process running for 3.247)
+2025-05-03T15:17:29.533-04:00  INFO 7426 --- [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-05-03T15:17:29.533-04:00  INFO 7426 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-05-03T15:17:29.535-04:00  INFO 7426 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2025-05-03T15:17:29.703-04:00  INFO 7426 --- [http-nio-8080-exec-1] c.e.t.service.TrainCrewServiceImpl       : Processing crew request ID: REQ12345678
+2025-05-03T15:17:29.726-04:00  INFO 7426 --- [http-nio-8080-exec-1] c.e.t.service.TrainCrewServiceImpl       : Finished processing crew request ID: REQ12345678

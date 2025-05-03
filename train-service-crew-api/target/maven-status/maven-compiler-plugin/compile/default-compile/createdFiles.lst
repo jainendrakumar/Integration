@@ -1,0 +1,6 @@
+com\example\trainservicecrewapi\TrainServiceCrewApiApplication.class
+com\example\trainservicecrewapi\service\TrainCrewService.class
+com\example\trainservicecrewapi\config\AppConfig.class
+com\example\trainservicecrewapi\controller\TrainCrewController.class
+com\example\trainservicecrewapi\config\GlobalExceptionHandler.class
+com\example\trainservicecrewapi\model\TrainServiceCrewRequest.class

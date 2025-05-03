@@ -4,13 +4,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
-import java.util.List;
-
 /**
  * Represents a single station sequence within crew lobby details.
  * Contains information about station code, sequence number, traction, ETA, and ETD.
  */
-@Data
+@Data // Keep for toString, equals, hashCode, constructors
 @NoArgsConstructor
 @AllArgsConstructor
 public class StationSequence {
@@ -38,5 +36,49 @@ public class StationSequence {
      * Estimated Time of Departure (as a string, format might need clarification if parsing is required).
      */
     private String ETD;
+
+    // --- Explicit Getter Methods ---
+
+    public String getStationCode() {
+        return StationCode;
+    }
+
+    public int getStationSeqNr() {
+        return StationSeqNr;
+    }
+
+    public String getTraction() {
+        return Traction;
+    }
+
+    public String getETA() {
+        return ETA;
+    }
+
+    public String getETD() {
+        return ETD;
+    }
+
+    // --- Explicit Setter Methods ---
+
+    public void setStationCode(String stationCode) {
+        StationCode = stationCode;
+    }
+
+    public void setStationSeqNr(int stationSeqNr) {
+        StationSeqNr = stationSeqNr;
+    }
+
+    public void setTraction(String traction) {
+        Traction = traction;
+    }
+
+    public void setETA(String ETA) {
+        this.ETA = ETA;
+    }
+
+    public void setETD(String ETD) {
+        this.ETD = ETD;
+    }
 }
 

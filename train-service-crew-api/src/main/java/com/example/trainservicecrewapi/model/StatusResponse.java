@@ -9,7 +9,7 @@ import lombok.AllArgsConstructor;
  * This corresponds to the format specified in point 6 of the requirements.
  * It confirms the processing status for a given request.
  */
-@Data
+@Data // Keep for toString, equals, hashCode, constructors
 @NoArgsConstructor
 @AllArgsConstructor
 public class StatusResponse {
@@ -35,9 +35,37 @@ public class StatusResponse {
      * @param response The TrainServiceCrewResponse received by the second endpoint.
      */
     public StatusResponse(TrainServiceCrewResponse response) {
-        this.CrewLobby = response.getCrewLobby();
-        this.RequestID = response.getRequestID();
+        this.CrewLobby = response.getCrewLobby(); // Uses explicit getter from TrainServiceCrewResponse
+        this.RequestID = response.getRequestID(); // Uses explicit getter from TrainServiceCrewResponse
         // STATUS retains its default "Processed" value
+    }
+
+    // --- Explicit Getter Methods ---
+
+    public String getCrewLobby() {
+        return CrewLobby;
+    }
+
+    public String getRequestID() {
+        return RequestID;
+    }
+
+    public String getSTATUS() {
+        return STATUS;
+    }
+
+    // --- Explicit Setter Methods ---
+
+    public void setCrewLobby(String crewLobby) {
+        CrewLobby = crewLobby;
+    }
+
+    public void setRequestID(String requestID) {
+        RequestID = requestID;
+    }
+
+    public void setSTATUS(String STATUS) {
+        this.STATUS = STATUS;
     }
 }
 

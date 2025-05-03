@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
  * It contains overall response details mirroring the request structure but with
  * simplified crew lobby details.
  */
-@Data
+@Data // Keep for toString, equals, hashCode, constructors
 @NoArgsConstructor
 @AllArgsConstructor
 public class TrainServiceCrewResponse {
@@ -41,13 +41,41 @@ public class TrainServiceCrewResponse {
      * @param request The corresponding TrainServiceCrewRequest object.
      */
     public TrainServiceCrewResponse(TrainServiceCrewRequest request) {
-        this.CrewLobby = request.getCrewLobby();
-        this.RequestID = request.getRequestID();
-        if (request.getCrewLobbyDetails() != null) {
-            this.CrewLobbyDetails = request.getCrewLobbyDetails().stream()
-                                         .map(CrewLobbyDetailResponse::new) // Use constructor reference
-                                         .collect(Collectors.toList());
+        this.CrewLobby = request.getCrewLobby(); // Uses explicit getter from TrainServiceCrewRequest
+        this.RequestID = request.getRequestID(); // Uses explicit getter from TrainServiceCrewRequest
+        if (request.getCrewLobbyDetails() != null) { // Uses explicit getter from TrainServiceCrewRequest
+            this.CrewLobbyDetails = request.getCrewLobbyDetails().stream() // Uses explicit getter from TrainServiceCrewRequest
+                    .map(CrewLobbyDetailResponse::new) // Use constructor reference
+                    .collect(Collectors.toList());
         }
+    }
+
+    // --- Explicit Getter Methods ---
+
+    public String getCrewLobby() {
+        return CrewLobby;
+    }
+
+    public String getRequestID() {
+        return RequestID;
+    }
+
+    public List<CrewLobbyDetailResponse> getCrewLobbyDetails() {
+        return CrewLobbyDetails;
+    }
+
+    // --- Explicit Setter Methods ---
+
+    public void setCrewLobby(String crewLobby) {
+        CrewLobby = crewLobby;
+    }
+
+    public void setRequestID(String requestID) {
+        RequestID = requestID;
+    }
+
+    public void setCrewLobbyDetails(List<CrewLobbyDetailResponse> crewLobbyDetails) {
+        CrewLobbyDetails = crewLobbyDetails;
     }
 }
 

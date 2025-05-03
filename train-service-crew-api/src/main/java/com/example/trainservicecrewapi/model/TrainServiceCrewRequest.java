@@ -12,7 +12,7 @@ import java.util.List;
  * Contains overall request details and a list of crew lobby details.
  * This class represents the object *within* the "TrainServiceCrewRequest" array.
  */
-@Data
+@Data // Keep for toString, equals, hashCode, constructors
 @NoArgsConstructor
 @AllArgsConstructor
 public class TrainServiceCrewRequest {
@@ -46,5 +46,49 @@ public class TrainServiceCrewRequest {
      */
     @JsonProperty("CrewLobbyDetails") // Explicit mapping
     private List<CrewLobbyDetailRequest> CrewLobbyDetails;
+
+    // --- Explicit Getter Methods ---
+
+    public String getCrewLobby() {
+        return CrewLobby;
+    }
+
+    public String getRequestID() {
+        return RequestID;
+    }
+
+    public int getTotNoOfLoadID() {
+        return TotNoOfLoadID;
+    }
+
+    public int getTotNoOfCrewChangePlanID() {
+        return TotNoOfCrewChangePlanID;
+    }
+
+    public List<CrewLobbyDetailRequest> getCrewLobbyDetails() {
+        return CrewLobbyDetails;
+    }
+
+    // --- Explicit Setter Methods (Optional but good practice if needed elsewhere) ---
+
+    public void setCrewLobby(String crewLobby) {
+        CrewLobby = crewLobby;
+    }
+
+    public void setRequestID(String requestID) {
+        RequestID = requestID;
+    }
+
+    public void setTotNoOfLoadID(int totNoOfLoadID) {
+        TotNoOfLoadID = totNoOfLoadID;
+    }
+
+    public void setTotNoOfCrewChangePlanID(int totNoOfCrewChangePlanID) {
+        TotNoOfCrewChangePlanID = totNoOfCrewChangePlanID;
+    }
+
+    public void setCrewLobbyDetails(List<CrewLobbyDetailRequest> crewLobbyDetails) {
+        CrewLobbyDetails = crewLobbyDetails;
+    }
 }
 
